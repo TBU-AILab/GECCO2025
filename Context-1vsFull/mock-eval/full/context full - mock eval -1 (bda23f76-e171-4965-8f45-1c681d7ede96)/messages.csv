@@ -1,0 +1,787 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:54:40.520633+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;e439013c-ed7f-4cf7-b48d-6f75942aad70;{}
+2025-03-31 20:54:40.520942+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;b042159c-5fb5-43b6-b61a-20680d8e9ede;{}
+2025-03-31 20:54:49.569824+00:00;508;assistant;"```python
+import random
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+def initialize_population(pop_size, dim, bounds):
+    population = []
+    for _ in range(pop_size):
+        individual = [random.uniform(low, high) for low, high in bounds]
+        population.append(individual)
+    return population
+
+def evaluate_population(population, func):
+    fitness_values = [func(individual) for individual in population]
+    return fitness_values
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 30
+    w = 0.5
+    c1 = 1.5
+    c2 = 1.5
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    evals = pop_size
+
+    while evals < max_evals:
+        for i, individual in enumerate(population):
+            velocities[i] = [w * vel +
+                             c1 * random.random() * (l_best - curr) +
+                             c2 * random.random() * (g_best - curr)
+                             for vel, curr, l_best, g_best in zip(velocities[i], individual, local_best_positions[i], global_best_position)]
+
+            population[i] = update_position(individual, velocities[i], bounds)
+
+            fitness = func(population[i])
+            evals += 1
+
+            if fitness < local_best_values[i]:
+                local_best_values[i] = fitness
+                local_best_positions[i] = population[i][:]
+
+            if fitness < global_best_value:
+                global_best_value = fitness
+                global_best_position = population[i][:]
+
+            if evals >= max_evals:
+                break
+
+    return global_best_value
+```";;;6a141f5f-f44f-4c0e-a8ba-eff84d060ada;{}
+2025-03-31 20:54:49.879219+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;96f1db27-3a45-41dd-8f2a-bf8b69353a5b;{}
+2025-03-31 20:54:57.292208+00:00;648;assistant;"```python
+import random
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+def initialize_population(pop_size, dim, bounds):
+    population = []
+    for _ in range(pop_size):
+        individual = [random.uniform(low, high) for low, high in bounds]
+        population.append(individual)
+    return population
+
+def evaluate_population(population, func, evals_counter):
+    fitness_values = []
+    for individual in population:
+        fitness_values.append(func(individual))
+        evals_counter[0] += 1
+    return fitness_values
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 40     # Increased population size for improved exploration
+    inertia = 0.7     # Higher initial inertia for broader search
+    cognitive = 2.0   # Increased cognitive parameter for local intensification
+    social = 2.0      # Increased social parameter for global exploration
+
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+
+    population = initialize_population(pop_size, dim, bounds)
+    evals_counter = [0]
+    fitness_values = evaluate_population(population, func, evals_counter)
+    
+    # Initialize global and local bests
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    evals = evals_counter[0]
+
+    while evals < max_evals:
+        for i, individual in enumerate(population):
+            # Velocity update with inertia weight adaptation
+            velocities[i] = [inertia * vel +
+                             cognitive * random.random() * (l_best - curr) +
+                             social * random.random() * (g_best - curr)
+                             for vel, curr, l_best, g_best in zip(velocities[i], individual, local_best_positions[i], global_best_position)]
+
+            # Update position within bounds
+            population[i] = update_position(individual, velocities[i], bounds)
+
+            # Evaluate new fitness
+            fitness = func(population[i])
+            evals += 1
+
+            # Update local and global bests
+            if fitness < local_best_values[i]:
+                local_best_values[i] = fitness
+                local_best_positions[i] = population[i][:]
+
+            if fitness < global_best_value:
+                global_best_value = fitness
+                global_best_position = population[i][:]
+
+            if evals >= max_evals:
+                break
+
+        # Decrease inertia to focus exploration as convergence nears
+        inertia = 0.7 - (0.5 * (evals / max_evals))
+
+    return global_best_value
+```";;;f6737424-54ae-4ad9-92cf-bfc44a05f9be;{}
+2025-03-31 20:54:57.602023+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;d5ebb08c-b51e-4a67-bccd-ab5a5aa2b5a1;{}
+2025-03-31 20:55:03.056138+00:00;557;assistant;"```python
+import random
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+def evaluate_population(population, func, evals_counter):
+    return [func(individual) for individual in population]
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50     # Increased population size for improved exploration
+    inertia = 0.9     # Start with a higher inertia for improved global exploration
+    cognitive = 1.5   # Balance cognitive influence
+    social = 1.5      # Balance social influence
+
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+    population = initialize_population(pop_size, dim, bounds)
+    evals_counter = [0]
+    fitness_values = evaluate_population(population, func, evals_counter)
+    
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    evals = len(population)
+
+    while evals < max_evals:
+        for i, individual in enumerate(population):
+            velocities[i] = [inertia * vel +
+                             cognitive * random.random() * (l_best - curr) +
+                             social * random.random() * (g_best - curr)
+                             for vel, curr, l_best, g_best in zip(velocities[i], individual, local_best_positions[i], global_best_position)]
+
+            population[i] = update_position(individual, velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            if fitness < local_best_values[i]:
+                local_best_values[i] = fitness
+                local_best_positions[i] = population[i][:]
+
+            if fitness < global_best_value:
+                global_best_value = fitness
+                global_best_position = population[i][:]
+
+            if evals >= max_evals:
+                break
+
+        inertia = 0.9 - (0.8 * (evals / max_evals))  # Linearly decreasing inertia
+
+    return global_best_value
+```";;;be18cc2a-f77c-4caa-bb1f-31c016b51d4f;{}
+2025-03-31 20:55:03.360909+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;f2c1c13f-1f43-4f08-8eef-cabf798ad73e;{}
+2025-03-31 20:55:09.928609+00:00;576;assistant;"```python
+import random
+
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+
+def evaluate_population(population, func):
+    fitness_values = [func(individual) for individual in population]
+    return fitness_values
+
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50  # Larger population size for diversity
+    inertia_init = 0.9  # Initial inertia
+    inertia_final = 0.4  # Final inertia
+    cognitive = 2.05  # Cognitive acceleration coefficient
+    social = 2.05  # Social acceleration coefficient
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    evals = len(population)
+
+    # Initialize bests
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    while evals < max_evals:
+        inertia = inertia_init - ((inertia_init - inertia_final) * (evals / max_evals))  # Decrease inertia over time
+
+        for i, individual in enumerate(population):
+            velocities[i] = [inertia * vel +
+                             cognitive * random.random() * (l_best - curr) +
+                             social * random.random() * (g_best - curr)
+                             for vel, curr, l_best, g_best in zip(velocities[i], individual, local_best_positions[i], global_best_position)]
+
+            population[i] = update_position(individual, velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            # Update local best
+            if fitness < local_best_values[i]:
+                local_best_values[i] = fitness
+                local_best_positions[i] = population[i][:]
+
+            # Update global best
+            if fitness < global_best_value:
+                global_best_value = fitness
+                global_best_position = population[i][:]
+
+            if evals >= max_evals:
+                break
+
+    return global_best_value
+```";;;64984a6d-8f10-4f6d-a553-f4e2b4fae153;{}
+2025-03-31 20:55:10.238975+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;a9e913c4-4475-47c3-a4db-9c8395f1c4f6;{}
+2025-03-31 20:55:15.772015+00:00;555;assistant;"```python
+import random
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+def evaluate_population(population, func):
+    return [func(individual) for individual in population]
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50  # Larger population size for diversity
+    inertia_start = 0.9  # Initial inertia weight
+    inertia_end = 0.4  # Ending inertia weight
+    cognitive = 2.0  # Cognitive (personal best influence)
+    social = 2.0  # Social (global best influence)
+
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    evals = len(population)
+
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    while evals < max_evals:
+        inertia = inertia_start - ((inertia_start - inertia_end) * (evals / max_evals))  # Linear inertia reduction
+
+        for i, individual in enumerate(population):
+            velocities[i] = [
+                inertia * vel +
+                cognitive * random.random() * (l_best - curr) +
+                social * random.random() * (g_best - curr)
+                for vel, curr, l_best, g_best in zip(velocities[i], individual, local_best_positions[i], global_best_position)
+            ]
+
+            population[i] = update_position(individual, velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            if fitness < local_best_values[i]:
+                local_best_values[i] = fitness
+                local_best_positions[i] = population[i][:]
+
+            if fitness < global_best_value:
+                global_best_value = fitness
+                global_best_position = population[i][:]
+
+            if evals >= max_evals:
+                break
+
+    return global_best_value
+```";;;be295ddf-6af4-4685-a10c-1280e915faee;{}
+2025-03-31 20:55:16.090781+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;f9f90de0-32f6-4955-aa09-b2bb877a43e1;{}
+2025-03-31 20:55:24.786919+00:00;564;assistant;"```python
+import random
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+def evaluate_population(population, func):
+    return [func(individual) for individual in population]
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50
+    inertia_start = 0.9
+    inertia_end = 0.4
+    cognitive = 2.0
+    social = 2.0
+
+    # Initialize velocities and population
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    evals = len(population)
+
+    # Determine initial global and local bests
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    def adaptive_inertia(evaluations):
+        """"""Dynamic adjustment of inertia weight.""""""
+        return inertia_start - (evaluations / max_evals) * (inertia_start - inertia_end)
+
+    while evals < max_evals:
+        inertia = adaptive_inertia(evals)
+
+        for i in range(pop_size):
+            velocities[i] = [
+                inertia * velocities[i][j] +
+                cognitive * random.random() * (local_best_positions[i][j] - population[i][j]) +
+                social * random.random() * (global_best_position[j] - population[i][j])
+                for j in range(dim)
+            ]
+
+            population[i] = update_position(population[i], velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            # Update local and global bests
+            if fitness < local_best_values[i]:
+                local_best_positions[i] = population[i][:]
+                local_best_values[i] = fitness
+
+            if fitness < global_best_value:
+                global_best_position = population[i][:]
+                global_best_value = fitness
+
+            if evals >= max_evals:
+                break
+    
+    return global_best_value
+```";;;18c59b2a-af00-477e-9ed5-f7051a653f2e;{}
+2025-03-31 20:55:25.094379+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;6822c7eb-49e0-4053-9aef-0511164de133;{}
+2025-03-31 20:55:31.217674+00:00;627;assistant;"```python
+import random
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+def evaluate_population(population, func):
+    return [func(individual) for individual in population]
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50
+    inertia_start = 0.9
+    inertia_end = 0.4
+    cognitive = 2.0
+    social = 2.0
+
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    evals = len(population)
+
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    def adaptive_inertia(evaluations):
+        return inertia_start - (evaluations / max_evals) * (inertia_start - inertia_end)
+
+    while evals < max_evals:
+        inertia = adaptive_inertia(evals)
+
+        for i in range(pop_size):
+            velocities[i] = [
+                inertia * velocities[i][j] +
+                cognitive * random.random() * (local_best_positions[i][j] - population[i][j]) +
+                social * random.random() * (global_best_position[j] - population[i][j])
+                for j in range(dim)
+            ]
+
+            population[i] = update_position(population[i], velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            if fitness < local_best_values[i]:
+                local_best_positions[i] = population[i][:]
+                local_best_values[i] = fitness
+
+            if fitness < global_best_value:
+                global_best_position = population[i][:]
+                global_best_value = fitness
+
+            if evals >= max_evals:
+                break
+    
+        # Ensure convergence by resetting some aspect every few iterations if no improvement
+        if evals % (pop_size * 5) == 0:
+            for j in range(dim):
+                if random.random() < 0.1:  # 10% chance to perturb component
+                    for k in range(pop_size):
+                        population[k][j] += random.gauss(0, 0.1 * (bounds[j][1] - bounds[j][0]))
+
+    return global_best_value
+```";;;913c96e1-4fc0-4809-9c11-47cf9772798b;{}
+2025-03-31 20:55:31.525052+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;92343671-61e5-4188-8e31-556490d630d6;{}
+2025-03-31 20:55:38.273030+00:00;656;assistant;"```python
+import random
+
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+
+def evaluate_population(population, func):
+    return [func(individual) for individual in population]
+
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50
+    inertia_start = 0.9
+    inertia_end = 0.4
+    cognitive = 2.0
+    social = 2.0
+
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    evals = len(population)
+
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    def adaptive_inertia(evaluations):
+        return inertia_start - (evaluations / max_evals) * (inertia_start - inertia_end)
+
+    while evals < max_evals:
+        inertia = adaptive_inertia(evals)
+
+        for i in range(pop_size):
+            velocities[i] = [
+                inertia * velocities[i][j] +
+                cognitive * random.random() * (local_best_positions[i][j] - population[i][j]) +
+                social * random.random() * (global_best_position[j] - population[i][j])
+                for j in range(dim)
+            ]
+
+            population[i] = update_position(population[i], velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            if fitness < local_best_values[i]:
+                local_best_positions[i] = population[i][:]
+                local_best_values[i] = fitness
+
+            if fitness < global_best_value:
+                global_best_position = population[i][:]
+                global_best_value = fitness
+
+            if evals >= max_evals:
+                break
+
+        # Perturbation strategy to escape local optima
+        if evals % (pop_size * 10) == 0:
+            for i in range(pop_size):
+                if random.random() < 0.1:  # 10% chance to mutate an individual
+                    component = random.randint(0, dim - 1)
+                    mutation_strength = 0.1 * (bounds[component][1] - bounds[component][0])
+                    population[i][component] += random.gauss(0, mutation_strength)
+                    population[i] = adjust_with_bounds(population[i], bounds)
+
+    return global_best_value
+```";;;88d2c51b-c0a1-4bc9-aa1a-5841e84f1364;{}
+2025-03-31 20:55:38.584537+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;ca05ec61-9c79-4f43-b75a-96fe31483d8f;{}
+2025-03-31 20:55:45.523035+00:00;695;assistant;"```python
+import random
+
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+
+def evaluate_population(population, func):
+    return [func(individual) for individual in population]
+
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50
+    inertia_start = 0.9
+    inertia_end = 0.4
+    cognitive = 2.0
+    social = 2.0
+
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    evals = len(population)
+
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    def adaptive_inertia(evaluations):
+        return inertia_start - (evaluations / max_evals) * (inertia_start - inertia_end)
+
+    while evals < max_evals:
+        inertia = adaptive_inertia(evals)
+
+        for i in range(pop_size):
+            velocities[i] = [
+                inertia * velocities[i][j] +
+                cognitive * random.random() * (local_best_positions[i][j] - population[i][j]) +
+                social * random.random() * (global_best_position[j] - population[i][j])
+                for j in range(dim)
+            ]
+
+            population[i] = update_position(population[i], velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            if fitness < local_best_values[i]:
+                local_best_positions[i] = population[i][:]
+                local_best_values[i] = fitness
+
+            if fitness < global_best_value:
+                global_best_position = population[i][:]
+                global_best_value = fitness
+
+            if evals >= max_evals:
+                break
+
+        # Hybrid perturbation strategy to enhance exploration
+        if evals % (pop_size * 10) == 0:
+            for i in range(pop_size):
+                if random.random() < 0.1:
+                    for j in range(dim):
+                        if random.random() < 0.1:
+                            mutation_strength = 0.1 * (bounds[j][1] - bounds[j][0])
+                            population[i][j] += random.gauss(0, mutation_strength)
+                            velocity_perturbation = 0.5 * mutation_strength
+                            velocities[i][j] += random.gauss(0, velocity_perturbation)
+                    population[i] = adjust_with_bounds(population[i], bounds)
+                    velocities[i] = adjust_with_bounds(velocities[i], bounds)
+
+    return global_best_value
+```";;;4f1811cd-c9fe-48ba-b43d-7fd128d8cbe0;{}
+2025-03-31 20:55:45.835296+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;894f625b-5f2a-42f4-9dfc-afdb5b11ed28;{}
+2025-03-31 20:55:51.840847+00:00;670;assistant;"```python
+import random
+
+def clip(value, lower, upper):
+    return max(lower, min(value, upper))
+
+def adjust_with_bounds(solution, bounds):
+    return [clip(value, low, high) for value, (low, high) in zip(solution, bounds)]
+
+def update_position(current_pos, velocity, bounds):
+    new_pos = [pos + vel for pos, vel in zip(current_pos, velocity)]
+    return adjust_with_bounds(new_pos, bounds)
+
+def initialize_population(pop_size, dim, bounds):
+    return [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+
+def evaluate_population(population, func):
+    return [func(individual) for individual in population]
+
+def run(func, dim, bounds, max_evals):
+    pop_size = 50
+    inertia_start = 0.9
+    inertia_end = 0.4
+    cognitive = 2.0
+    social = 2.0
+
+    velocities = [[random.uniform(-abs(high - low), abs(high - low)) for low, high in bounds] for _ in range(pop_size)]
+    population = initialize_population(pop_size, dim, bounds)
+    fitness_values = evaluate_population(population, func)
+    evals = len(population)
+
+    global_best_value = min(fitness_values)
+    global_best_position = population[fitness_values.index(global_best_value)]
+    local_best_positions = population[:]
+    local_best_values = fitness_values[:]
+
+    def adaptive_inertia(evaluations):
+        return inertia_start - (evaluations / max_evals) * (inertia_start - inertia_end)
+
+    while evals < max_evals:
+        inertia = adaptive_inertia(evals)
+
+        for i in range(pop_size):
+            velocities[i] = [
+                inertia * velocities[i][j] +
+                cognitive * random.random() * (local_best_positions[i][j] - population[i][j]) +
+                social * random.random() * (global_best_position[j] - population[i][j])
+                for j in range(dim)
+            ]
+
+            population[i] = update_position(population[i], velocities[i], bounds)
+            fitness = func(population[i])
+            evals += 1
+
+            if fitness < local_best_values[i]:
+                local_best_positions[i] = population[i][:]
+                local_best_values[i] = fitness
+
+            if fitness < global_best_value:
+                global_best_position = population[i][:]
+                global_best_value = fitness
+
+            if evals >= max_evals:
+                break
+
+        # Enhanced perturbation strategy for better exploration
+        if evals % (pop_size * 10) == 0:
+            for i in range(pop_size):
+                if random.random() < 0.2:  # Increased chance for perturbation
+                    dim_to_mutate = random.sample(range(dim), dim // 5)  # Mutate 20% of the dimensions
+                    for j in dim_to_mutate:
+                        mutation_strength = 0.1 * (bounds[j][1] - bounds[j][0])
+                        population[i][j] += random.gauss(0, mutation_strength)
+                    population[i] = adjust_with_bounds(population[i], bounds)
+
+    return global_best_value
+```";;;e6493a19-406b-4fd8-b30f-e652a3b7b76f;{}

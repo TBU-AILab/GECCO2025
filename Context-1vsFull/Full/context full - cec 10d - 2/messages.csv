@@ -1,0 +1,782 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-21 17:33:23.708898+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when self.func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;35e96709-7ed7-4896-bfd1-b83a26e4dcb3;{}
+2025-03-21 17:33:23.709239+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;19054414-c470-47bd-adb0-38325383ed3e;{}
+2025-03-21 17:33:36.135499+00:00;456;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize population
+    population_size = 50  # You can adjust this
+    mutation_rate = 0.1  # Rate of mutation
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = []
+        for individual in population:
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+            
+            if fitness < best_score:
+                best_score = fitness
+                best_position = individual
+        
+        # Selection: Tournament Selection
+        next_generation = []
+        for _ in range(population_size):
+            contestants = random.sample(population, 3)
+            contestant_fitness = [fitness_scores[population.index(c)] for c in contestants]
+            winner = contestants[contestant_fitness.index(min(contestant_fitness))]
+            next_generation.append(winner[:])  # Add to next generation
+
+        # Crossover and mutation
+        new_population = []
+        for i in range(0, population_size, 2):
+            parent1 = next_generation[i]
+            parent2 = next_generation[i+1 if i+1 < population_size else 0]
+            
+            # Single-point crossover
+            crossover_point = random.randint(1, dim-1)
+            child1 = parent1[:crossover_point] + parent2[crossover_point:]
+            child2 = parent2[:crossover_point] + parent1[crossover_point:]
+
+            # Mutation
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                
+                new_population.append(child)
+        
+        # Replace the old population with the new one
+        population = new_population
+    
+    return best_score
+```";;;598ad367-5c2a-4fc1-ab64-b6cb64b7b112;{}
+2025-03-22 03:23:45.118591+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 16235.02469215784
+mean result of function 2 dim 10 = 23.355191073090865
+mean result of function 3 dim 10 = 0.25430539006408
+mean result of function 4 dim 10 = 21.584035897618016
+mean result of function 5 dim 10 = 218.6460949617518
+mean result of function 6 dim 10 = 7034.395666444789
+mean result of function 7 dim 10 = 17.036205796735167
+mean result of function 8 dim 10 = 20.10303554798365
+mean result of function 9 dim 10 = 249.180954772772
+mean result of function 10 dim 10 = 152.24454633402544
+mean result of function 11 dim 10 = 163.53436462337461
+mean result of function 12 dim 10 = 175.3013467946274
+
+and the statistic result is:
+not enough data
+";;;f793de64-70f1-403b-8026-1378a7caa007;{}
+2025-03-22 03:23:50.745504+00:00;608;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize population
+    population_size = 100  # Increased population size for diversity
+    mutation_rate = 0.2  # Increased mutation rate for more exploration
+    crossover_rate = 0.8  # Added crossover rate to control crossover operations
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Helper function for evaluating the fitness
+    def evaluate_population(pop):
+        fitness_scores = []
+        nonlocal evals
+        for individual in pop:
+            if evals >= max_evals:
+                break
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+        return fitness_scores
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = evaluate_population(population)
+        
+        # Update best solution found
+        for i, fitness in enumerate(fitness_scores):
+            if fitness < best_score:
+                best_score = fitness
+                best_position = population[i]
+        
+        # Selection: Roulette Wheel Selection
+        total_fitness = sum(fitness_scores)
+        if total_fitness == 0:
+            probabilities = [1/len(fitness_scores)] * len(fitness_scores)
+        else:
+            probabilities = [f / total_fitness for f in fitness_scores]
+        
+        # Create next generation with selection, crossover, and mutation
+        next_generation = []
+        for _ in range(population_size // 2):
+            parents = random.choices(population, weights=probabilities, k=2)
+            if random.random() < crossover_rate:
+                # Simulated Binary Crossover (SBX)
+                crossover_point = random.randint(1, dim-1)
+                beta = random.random()
+                child1 = [
+                    beta * parents[0][i] + (1 - beta) * parents[1][i]
+                    for i in range(dim)
+                ]
+                child2 = [
+                    beta * parents[1][i] + (1 - beta) * parents[0][i]
+                    for i in range(dim)
+                ]
+            else:
+                child1, child2 = parents[0][:], parents[1][:]
+            
+            # Mutation
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                    
+            next_generation.extend([child1, child2])
+        
+        # Replace old population with the new one for the next iteration
+        population = next_generation[:population_size]
+
+    return best_score
+```";;;28f9b76a-11a5-46d5-ab1e-6d4c30c8b2f7;{}
+2025-03-22 03:23:50.917377+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception The number of weights does not match the population on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception The number of weights does not match the population on function = InvertedSphere.
+";;;32e510ba-29a0-42ef-a28e-565dd2ba5024;{}
+2025-03-22 03:23:55.103543+00:00;682;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize population
+    population_size = 100  # Increased population size for diversity
+    mutation_rate = 0.2  # Increased mutation rate for more exploration
+    crossover_rate = 0.8  # Added crossover rate to control crossover operations
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Helper function for evaluating the fitness
+    def evaluate_population(pop):
+        fitness_scores = []
+        nonlocal evals
+        for individual in pop:
+            if evals >= max_evals:
+                break
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+        return fitness_scores
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = evaluate_population(population)
+        
+        # Update best solution found
+        for i, fitness in enumerate(fitness_scores):
+            if fitness < best_score:
+                best_score = fitness
+                best_position = population[i]
+        
+        # Ensure probabilities match the population size for selection
+        total_fitness = sum(fitness_scores)
+        if total_fitness == 0 or len(fitness_scores) == 0:
+            probabilities = [1/len(fitness_scores)] * len(fitness_scores)
+        else:
+            min_fitness = min(fitness_scores)
+            # Adjusting probabilities to prevent divide by zero and ensure valid weights
+            adjusted_fitness = [f - min_fitness + 1 for f in fitness_scores]
+            total_adjusted_fitness = sum(adjusted_fitness)
+            probabilities = [f / total_adjusted_fitness for f in adjusted_fitness]
+        
+        # Create next generation with selection, crossover, and mutation
+        next_generation = []
+        for _ in range(population_size // 2):
+            parents = random.choices(population, weights=probabilities, k=2)
+            if random.random() < crossover_rate:
+                # Simulated Binary Crossover (SBX)
+                crossover_point = random.randint(1, dim-1)
+                beta = random.random()
+                child1 = [
+                    beta * parents[0][i] + (1 - beta) * parents[1][i]
+                    for i in range(dim)
+                ]
+                child2 = [
+                    beta * parents[1][i] + (1 - beta) * parents[0][i]
+                    for i in range(dim)
+                ]
+            else:
+                child1, child2 = parents[0][:], parents[1][:]
+            
+            # Mutation
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                    
+            next_generation.extend([child1, child2])
+        
+        # Replace old population with the new one for the next iteration
+        population = next_generation[:population_size]
+
+    return best_score
+```";;;206a2773-6224-475f-818a-84c958f8524f;{}
+2025-03-22 03:23:55.260784+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception The number of weights does not match the population on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception The number of weights does not match the population on function = InvertedSphere.
+";;;9c900842-227b-4153-8bf5-dc78eab4be14;{}
+2025-03-22 03:24:01.080699+00:00;688;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize population
+    population_size = 100  # Increased population size for diversity
+    mutation_rate = 0.2  # Increased mutation rate for more exploration
+    crossover_rate = 0.8  # Added crossover rate to control crossover operations
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Helper function for evaluating the fitness
+    def evaluate_population(pop):
+        fitness_scores = []
+        nonlocal evals
+        for individual in pop:
+            if evals >= max_evals:
+                break
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+        return fitness_scores
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = evaluate_population(population)
+        
+        # Update best solution found
+        for i, fitness in enumerate(fitness_scores):
+            if fitness < best_score:
+                best_score = fitness
+                best_position = population[i]
+        
+        # Ensure probabilities match the population size for selection
+        if len(fitness_scores) == 0:
+            break
+
+        total_fitness = sum(fitness_scores)
+        if total_fitness == 0:
+            probabilities = [1/len(fitness_scores)] * len(fitness_scores)
+        else:
+            min_fitness = min(fitness_scores)
+            # Adjusting probabilities to prevent divide by zero and ensure valid weights
+            adjusted_fitness = [f - min_fitness + 1 for f in fitness_scores]
+            total_adjusted_fitness = sum(adjusted_fitness)
+            probabilities = [f / total_adjusted_fitness for f in adjusted_fitness]
+        
+        # Create next generation with selection, crossover, and mutation
+        next_generation = []
+        for _ in range(population_size // 2):
+            parents = random.choices(population, weights=probabilities, k=2)
+            if random.random() < crossover_rate:
+                # Simulated Binary Crossover (SBX)
+                crossover_point = random.randint(1, dim-1)
+                beta = random.random()
+                child1 = [
+                    beta * parents[0][i] + (1 - beta) * parents[1][i]
+                    for i in range(dim)
+                ]
+                child2 = [
+                    beta * parents[1][i] + (1 - beta) * parents[0][i]
+                    for i in range(dim)
+                ]
+            else:
+                child1, child2 = parents[0][:], parents[1][:]
+            
+            # Mutation
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                    
+            next_generation.extend([child1, child2])
+        
+        # Replace old population with the new one for the next iteration
+        population = next_generation[:population_size]
+
+    return best_score
+```
+";;;4d70191e-6d79-4fc7-9b24-a3db4bf3c406;{}
+2025-03-22 03:24:01.241448+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception The number of weights does not match the population on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception The number of weights does not match the population on function = InvertedSphere.
+";;;4a9079f4-b857-4c36-89a5-fb2acdd11110;{}
+2025-03-22 03:24:05.826810+00:00;740;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize population
+    population_size = 100  # Increased population size for diversity
+    mutation_rate = 0.2  # Increased mutation rate for more exploration
+    crossover_rate = 0.8  # Added crossover rate to control crossover operations
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Helper function for evaluating the fitness
+    def evaluate_population(pop):
+        fitness_scores = []
+        nonlocal evals
+        for individual in pop:
+            if evals >= max_evals:
+                break
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+        return fitness_scores
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = evaluate_population(population)
+        
+        # Update best solution found
+        for i, fitness in enumerate(fitness_scores):
+            if fitness < best_score:
+                best_score = fitness
+                best_position = population[i]
+        
+        # Ensure probabilities match the population size for selection
+        total_fitness = sum(fitness_scores)
+        if len(fitness_scores) == 0:
+            break
+
+        if total_fitness == 0:
+            probabilities = [1/len(fitness_scores)] * len(fitness_scores)
+        else:
+            min_fitness = min(fitness_scores)
+            # Adjusting probabilities to prevent divide by zero and ensure valid weights
+            adjusted_fitness = [f - min_fitness + 1 for f in fitness_scores]
+            total_adjusted_fitness = sum(adjusted_fitness)
+            probabilities = [f / total_adjusted_fitness for f in adjusted_fitness]
+        
+        # Match probabilities length to population size
+        if len(probabilities) < population_size:
+            probabilities += [0] * (population_size - len(probabilities))
+        elif len(probabilities) > population_size:
+            probabilities = probabilities[:population_size]
+        
+        # Create next generation with selection, crossover, and mutation
+        next_generation = []
+        for _ in range(population_size // 2):
+            parents = random.choices(population, weights=probabilities, k=2)
+            if random.random() < crossover_rate:
+                # Simulated Binary Crossover (SBX)
+                crossover_point = random.randint(1, dim-1)
+                beta = random.random()
+                child1 = [
+                    beta * parents[0][i] + (1 - beta) * parents[1][i]
+                    for i in range(dim)
+                ]
+                child2 = [
+                    beta * parents[1][i] + (1 - beta) * parents[0][i]
+                    for i in range(dim)
+                ]
+            else:
+                child1, child2 = parents[0][:], parents[1][:]
+            
+            # Mutation
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                    
+            next_generation.extend([child1, child2])
+        
+        # Replace old population with the new one for the next iteration
+        population = next_generation[:population_size]
+
+    return best_score
+```";;;48d80478-e2bd-41f1-a915-ee6aa23e6c01;{}
+2025-03-22 13:25:28.156674+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 80151.39460317056
+mean result of function 2 dim 10 = 1834.4904701132587
+mean result of function 3 dim 10 = 78.90898166593503
+mean result of function 4 dim 10 = 93.0133112677186
+mean result of function 5 dim 10 = 2047.2269933193054
+mean result of function 6 dim 10 = 681693368.9166336
+mean result of function 7 dim 10 = 150.534206722764
+mean result of function 8 dim 10 = 186.9766333883594
+mean result of function 9 dim 10 = 597.5418152365587
+mean result of function 10 dim 10 = 264.46236454112926
+mean result of function 11 dim 10 = 1534.4598582704714
+mean result of function 12 dim 10 = 421.72126240173486
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The best-so-far solution is significantly better on function 1 dim 10 with p-value=7.43858705279277e-09
+The best-so-far solution is significantly better on function 10 dim 10 with p-value=5.101390926008103e-05
+The best-so-far solution is significantly better on function 11 dim 10 with p-value=4.73402068419889e-11
+The best-so-far solution is significantly better on function 12 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 2 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 3 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 4 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 5 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 6 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 7 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 8 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 9 dim 10 with p-value=2.8719490663203234e-11
+
+";;;e8f5303f-20e6-4619-acae-430430775953;{}
+2025-03-22 13:25:36.111686+00:00;723;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize population with diversity consideration
+    population_size = 100
+    mutation_rate = 0.3  # Increase mutation rate for broader exploration
+    crossover_rate = 0.9  # Ensure most crossover to increase exploration
+    elite_rate = 0.1  # Introduce elitism
+    elite_count = int(population_size * elite_rate)
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Helper function for evaluating the fitness
+    def evaluate_population(pop):
+        fitness_scores = []
+        nonlocal evals
+        for individual in pop:
+            if evals >= max_evals:
+                break
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+        return fitness_scores
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = evaluate_population(population)
+        
+        # Update best solution found
+        for i, fitness in enumerate(fitness_scores):
+            if fitness < best_score:
+                best_score = fitness
+                best_position = population[i]
+        
+        # Handle situation when population size does not match fitness_scores length
+        if len(fitness_scores) < population_size:
+            population = population[:len(fitness_scores)]
+
+        # Select elites
+        elites = [x for _, x in sorted(zip(fitness_scores, population), key=lambda x: x[0])[:elite_count]]
+        
+        # Roulette wheel selection adjusted for minimization
+        total_fitness = sum(fitness_scores)
+        if total_fitness == 0:
+            probabilities = [1/len(fitness_scores)] * len(fitness_scores)
+        else:
+            min_fitness = min(fitness_scores)
+            adjusted_fitness = [1 / (f - min_fitness + 1) for f in fitness_scores]
+            total_adjusted_fitness = sum(adjusted_fitness)
+            probabilities = [f / total_adjusted_fitness for f in adjusted_fitness]
+        
+        # Create next generation with selected parents
+        next_generation = elites[:]
+        while len(next_generation) < population_size:
+            parents = random.choices(population, weights=probabilities, k=2)
+            if random.random() < crossover_rate:
+                # Simulated Binary Crossover (SBX)
+                beta = random.random()
+                child1 = [
+                    beta * parents[0][i] + (1 - beta) * parents[1][i]
+                    for i in range(dim)
+                ]
+                child2 = [
+                    beta * parents[1][i] + (1 - beta) * parents[0][i]
+                    for i in range(dim)
+                ]
+            else:
+                child1, child2 = parents[0][:], parents[1][:]
+            
+            # Apply mutation
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                
+                next_generation.append(child)
+        
+        # Update population
+        population = next_generation[:population_size]
+
+    return best_score
+```";;;d8bcfd81-a4e1-4aee-b357-97d658431dd4;{}
+2025-03-22 23:29:28.674388+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 12448.70052232096
+mean result of function 2 dim 10 = 36.16966449457183
+mean result of function 3 dim 10 = 0.0004824263726045539
+mean result of function 4 dim 10 = 25.537212768542776
+mean result of function 5 dim 10 = 593.5133500593086
+mean result of function 6 dim 10 = 1936.5295850002517
+mean result of function 7 dim 10 = 14.135746966246769
+mean result of function 8 dim 10 = 20.314645350563193
+mean result of function 9 dim 10 = 248.16516677718332
+mean result of function 10 dim 10 = 147.15591192921508
+mean result of function 11 dim 10 = 152.03167600981473
+mean result of function 12 dim 10 = 179.96112131071376
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The current solution is significantly better on function 1 dim 10 with p-value=0.018005351025415707
+There is no significant difference between current and best-so-far solutions on function 10 dim 10 with p-value=0.3440449406444759
+There is no significant difference between current and best-so-far solutions on function 11 dim 10 with p-value=0.07851865181943063
+There is no significant difference between current and best-so-far solutions on function 12 dim 10 with p-value=0.06676261397076391
+There is no significant difference between current and best-so-far solutions on function 2 dim 10 with p-value=0.32917742467820843
+The current solution is significantly better on function 3 dim 10 with p-value=2.8719490663203234e-11
+There is no significant difference between current and best-so-far solutions on function 4 dim 10 with p-value=0.23109674669077074
+The best-so-far solution is significantly better on function 5 dim 10 with p-value=0.0009272718622098232
+The current solution is significantly better on function 6 dim 10 with p-value=0.0012045979432564896
+The current solution is significantly better on function 7 dim 10 with p-value=3.2070402775202246e-06
+The current solution is significantly better on function 8 dim 10 with p-value=1.478706364173969e-05
+There is no significant difference between current and best-so-far solutions on function 9 dim 10 with p-value=0.22538880724489263
+
+";;;75bbf55e-073e-41e4-80a3-a8a375b0d4b2;{}
+2025-03-22 23:29:36.838300+00:00;696;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize population with greater diversity
+    population_size = 100
+    mutation_rate = 0.3  # Higher mutation rate for better exploration
+    crossover_rate = 0.9  # High crossover rate for diversity
+    elite_rate = 0.1  # Preserve top solutions
+    elite_count = int(population_size * elite_rate)
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Helper function for evaluating the fitness
+    def evaluate_population(pop):
+        fitness_scores = []
+        nonlocal evals
+        for individual in pop:
+            if evals >= max_evals:
+                break
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+        return fitness_scores
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = evaluate_population(population)
+        
+        # Update best solution found
+        for i, fitness in enumerate(fitness_scores):
+            if fitness < best_score:
+                best_score = fitness
+                best_position = population[i]
+        
+        # Select elites based on fitness scores
+        elites = [x for _, x in sorted(zip(fitness_scores, population), key=lambda x: x[0])[:elite_count]]
+        
+        # Calculate probabilities with a focus on minimization
+        adjusted_fitness = [1.0 / (f + 1e-9) for f in fitness_scores]  # Adding a small constant to prevent division by zero
+        total_adjusted_fitness = sum(adjusted_fitness)
+        probabilities = [f / total_adjusted_fitness for f in adjusted_fitness] if total_adjusted_fitness > 0 else [1.0 / population_size] * population_size
+        
+        # Create next generation with selection, crossover, and mutation
+        next_generation = elites[:]
+        while len(next_generation) < population_size:
+            parents = random.choices(population, weights=probabilities, k=2)
+            if random.random() < crossover_rate:
+                # Blend crossover for more nuanced combinations
+                alpha = random.random()
+                child1 = [
+                    alpha * parents[0][i] + (1 - alpha) * parents[1][i]
+                    for i in range(dim)
+                ]
+                child2 = [
+                    alpha * parents[1][i] + (1 - alpha) * parents[0][i]
+                    for i in range(dim)
+                ]
+            else:
+                child1, child2 = parents[0][:], parents[1][:]
+            
+            # Apply mutation
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                
+                # Ensure only unique individuals to maintain diversity
+                if child not in next_generation:
+                    next_generation.append(child)
+        
+        # Update population
+        population = next_generation[:population_size]
+
+    return best_score
+```";;;4f2d0497-644f-419e-a355-ba4aeee2ad2a;{}
+2025-03-23 09:36:34.793637+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 5268.953447090774
+mean result of function 2 dim 10 = 2.993479196757785
+mean result of function 3 dim 10 = 0.012852778732310199
+mean result of function 4 dim 10 = 12.105323438774667
+mean result of function 5 dim 10 = 38.400889074903176
+mean result of function 6 dim 10 = 732.641193910929
+mean result of function 7 dim 10 = 5.6075435445291255
+mean result of function 8 dim 10 = 19.814344152839134
+mean result of function 9 dim 10 = 237.1244686619276
+mean result of function 10 dim 10 = 126.17651263252993
+mean result of function 11 dim 10 = 53.426605258242496
+mean result of function 12 dim 10 = 181.93449948719515
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The current solution is significantly better on function 1 dim 10 with p-value=4.914908594145781e-06
+The current solution is significantly better on function 10 dim 10 with p-value=4.493865560056083e-05
+The current solution is significantly better on function 11 dim 10 with p-value=0.02558535265900965
+There is no significant difference between current and best-so-far solutions on function 12 dim 10 with p-value=0.08909163442771982
+The current solution is significantly better on function 2 dim 10 with p-value=3.659979928950705e-07
+The best-so-far solution is significantly better on function 3 dim 10 with p-value=5.22831602652652e-11
+The current solution is significantly better on function 4 dim 10 with p-value=2.472607078209698e-07
+The current solution is significantly better on function 5 dim 10 with p-value=1.477234870580106e-09
+The current solution is significantly better on function 6 dim 10 with p-value=0.0010855630297854832
+The current solution is significantly better on function 7 dim 10 with p-value=0.018005351025415707
+The best-so-far solution is significantly better on function 8 dim 10 with p-value=0.012999482492838093
+There is no significant difference between current and best-so-far solutions on function 9 dim 10 with p-value=0.5945602565439676
+
+";;;02c3aa18-dc86-4328-b3f0-abd142ab29df;{}
+2025-03-23 09:36:40.499407+00:00;700;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best_position = None
+    best_score = float('inf')
+    
+    # Initialize various parameters
+    population_size = 150  # Larger population for better diversity
+    mutation_rate = 0.2  # Balanced mutation rate
+    crossover_rate = 0.9  # High crossover rate for broad exploration
+    elite_rate = 0.1  # Preserve top solutions
+    elite_count = int(population_size * elite_rate)
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Helper function for evaluating the fitness
+    def evaluate_population(pop):
+        fitness_scores = []
+        nonlocal evals
+        for individual in pop:
+            if evals >= max_evals:
+                break
+            fitness = func(individual)
+            fitness_scores.append(fitness)
+            evals += 1
+        return fitness_scores
+    
+    # Main loop for evolutionary algorithm
+    evals = 0
+    while evals < max_evals:
+        # Evaluate current population
+        fitness_scores = evaluate_population(population)
+        
+        # Update best solution found
+        for i, fitness in enumerate(fitness_scores):
+            if fitness < best_score:
+                best_score = fitness
+                best_position = population[i]
+        
+        # Select elites based on fitness scores
+        elites = [x for _, x in sorted(zip(fitness_scores, population), key=lambda x: x[0])[:elite_count]]
+        
+        # Calculate probabilities with a sigmoid-based scaling for better selection pressure
+        max_fitness = max(fitness_scores, default=1)
+        probabilities = [1 / (1 + ((f - best_score) / max_fitness)) for f in fitness_scores]
+        total_probabilities = sum(probabilities)
+        probabilities = [p / total_probabilities for p in probabilities] if total_probabilities > 0 else [1.0 / population_size] * population_size
+        
+        # Create next generation with selection, crossover, and mutation
+        next_generation = elites[:]
+        while len(next_generation) < population_size:
+            parents = random.choices(population, weights=probabilities, k=2)
+            if random.random() < crossover_rate:
+                # Arithmetic crossover for improved diversity
+                alpha = random.random()
+                child1 = [
+                    alpha * parents[0][i] + (1 - alpha) * parents[1][i]
+                    for i in range(dim)
+                ]
+                child2 = [
+                    alpha * parents[1][i] + (1 - alpha) * parents[0][i]
+                    for i in range(dim)
+                ]
+            else:
+                child1, child2 = parents[0][:], parents[1][:]
+            
+            # Apply mutation step
+            for child in (child1, child2):
+                if random.random() < mutation_rate:
+                    mutation_idx = random.randint(0, dim-1)
+                    child[mutation_idx] = random.uniform(bounds[mutation_idx][0], bounds[mutation_idx][1])
+                
+                # Ensure diversity by allowing only unique individuals
+                if len(next_generation) < population_size and child not in next_generation:
+                    next_generation.append(child)
+        
+        # Update the population
+        population = next_generation
+
+    return best_score
+```";;;f07ce76d-7ea1-4d37-9dd4-8496125627c9;{}

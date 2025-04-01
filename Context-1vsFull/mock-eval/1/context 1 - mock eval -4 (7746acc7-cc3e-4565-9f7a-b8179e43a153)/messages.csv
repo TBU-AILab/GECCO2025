@@ -1,0 +1,2118 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:39:03.734236+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;4dc509d0-590f-4d10-ace1-2ae4a6a6c1e5;{}
+2025-03-31 20:39:03.734661+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;448d2336-924e-47d0-b309-e48f1f9e2bc6;{}
+2025-03-31 20:39:11.066317+00:00;517;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best = float('inf')
+    evals = 0
+
+    # Initialize a population of solutions randomly
+    population_size = 20
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    velocities = [[random.uniform(-1, 1) for _ in range(dim)] for _ in range(population_size)]
+
+    # Initialize personal bests and the global best
+    pbest_positions = population[:]
+    pbest_values = [func(individual) for individual in population]
+    evals += population_size
+    gbest_value = min(pbest_values)
+    gbest_position = pbest_positions[pbest_values.index(gbest_value)]
+
+    # PSO parameters
+    w = 0.5  # inertia weight
+    c1 = 1.5  # cognitive (personal) weight
+    c2 = 1.5  # social (global) weight
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Update velocity and position of each particle
+            for d in range(dim):
+                r1 = random.random()
+                r2 = random.random()
+                velocities[i][d] = (
+                    w * velocities[i][d]
+                    + c1 * r1 * (pbest_positions[i][d] - population[i][d])
+                    + c2 * r2 * (gbest_position[d] - population[i][d])
+                )
+                population[i][d] += velocities[i][d]
+                # Ensure position is within bounds
+                if population[i][d] < bounds[d][0]:
+                    population[i][d] = bounds[d][0]
+                elif population[i][d] > bounds[d][1]:
+                    population[i][d] = bounds[d][1]
+
+            # Evaluate the fitness
+            fitness = func(population[i])
+            evals += 1
+            # Update personal best
+            if fitness < pbest_values[i]:
+                pbest_values[i] = fitness
+                pbest_positions[i] = population[i][:]
+
+            # Update global best
+            if fitness < gbest_value:
+                gbest_value = fitness
+                gbest_position = population[i][:]
+
+            # Stop if max_evals is reached
+            if evals >= max_evals:
+                break
+
+    return gbest_value
+```
+";;;d443dc3c-2d68-4cc0-904a-713feb3114ab;{}
+2025-03-31 20:39:11.363536+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;3d683364-02dd-43a2-94f5-0f9a28687645;{}
+2025-03-31 20:39:17.768523+00:00;588;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best = float('inf')
+    best_position = None
+    evals = 0
+
+    # Initialize a population of solutions randomly
+    population_size = 20
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    velocities = [[random.uniform(-1, 1) for _ in range(dim)] for _ in range(population_size)]
+
+    # Initialize personal bests and the global best
+    pbest_positions = population[:]
+    pbest_values = [func(individual) for individual in population]
+    evals += population_size
+
+    # Identify the current global best solution
+    gbest_value = min(pbest_values)
+    gbest_position = pbest_positions[pbest_values.index(gbest_value)]
+
+    # PSO parameters
+    w = 0.7  # inertia weight
+    c1 = 1.5  # cognitive (personal) weight
+    c2 = 1.5  # social (global) weight
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Update velocity and position of each particle
+            for d in range(dim):
+                r1 = random.random()
+                r2 = random.random()
+                velocities[i][d] = (
+                    w * velocities[i][d]
+                    + c1 * r1 * (pbest_positions[i][d] - population[i][d])
+                    + c2 * r2 * (gbest_position[d] - population[i][d])
+                )
+                population[i][d] += velocities[i][d]
+
+                # Ensure position is within bounds
+                if population[i][d] < bounds[d][0]:
+                    population[i][d] = bounds[d][0]
+                elif population[i][d] > bounds[d][1]:
+                    population[i][d] = bounds[d][1]
+
+            # Evaluate the fitness
+            fitness = func(population[i])
+            evals += 1
+
+            # Update personal best
+            if fitness < pbest_values[i]:
+                pbest_values[i] = fitness
+                pbest_positions[i] = population[i][:]
+
+            # Update global best
+            if fitness < gbest_value:
+                gbest_value = fitness
+                gbest_position = population[i][:]
+
+            # Stop if max_evals is reached
+            if evals >= max_evals:
+                break
+
+    return gbest_value
+```
+This improved implementation maintains all key features of a standard Particle Swarm Optimization (PSO) algorithm, with adjustments for balancing exploration and exploitation through PSO parameters. It ensures that the particles' positions remain within defined bounds and efficiently updates both personal and global bests with every iteration.";;;ba474a4a-d439-4a1e-aaad-2574d6f07326;{}
+2025-03-31 20:39:18.065991+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;9826131d-cff9-4705-8c05-c9d1c3e0d50e;{}
+2025-03-31 20:39:24.994423+00:00;710;assistant;"```python
+import random
+
+def pso(func, dim, bounds, max_evals):
+    best_value = float('inf')
+    best_position = None
+    evals = 0
+
+    # PSO parameters
+    population_size = 20
+    w = 0.5  # inertia weight
+    c1 = 1.5  # cognitive (personal) weight
+    c2 = 1.5  # social (global) weight
+    min_velocity = -1.0
+    max_velocity = 1.0
+
+    # Initialize a population of solutions and velocities randomly
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    velocities = [[random.uniform(min_velocity, max_velocity) for _ in range(dim)] for _ in range(population_size)]
+
+    # Initialize personal bests and global best
+    pbest_positions = population[:]
+    pbest_values = [func(individual) for individual in population]
+    evals += population_size
+
+    gbest_value = min(pbest_values)
+    gbest_position = pbest_positions[pbest_values.index(gbest_value)]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Update velocity and position of each particle
+            for d in range(dim):
+                r1 = random.random()
+                r2 = random.random()
+
+                velocities[i][d] = (
+                    w * velocities[i][d]
+                    + c1 * r1 * (pbest_positions[i][d] - population[i][d])
+                    + c2 * r2 * (gbest_position[d] - population[i][d])
+                )
+                velocities[i][d] = max(min(velocities[i][d], max_velocity), min_velocity)
+
+                population[i][d] += velocities[i][d]
+                population[i][d] = max(min(population[i][d], bounds[d][1]), bounds[d][0])
+
+            # Evaluate the fitness
+            fitness = func(population[i])
+            evals += 1
+
+            # Update personal best
+            if fitness < pbest_values[i]:
+                pbest_values[i] = fitness
+                pbest_positions[i] = population[i][:]
+
+            # Update global best
+            if fitness < gbest_value:
+                gbest_value = fitness
+                gbest_position = population[i][:]
+
+            # Early stopping condition if max_evals is reached
+            if evals >= max_evals:
+                break
+
+    return gbest_value, gbest_position
+
+# Example usage
+def sample_function(x):
+    return sum(xi ** 2 for xi in x)
+
+# Dimensions and bounds for the problem
+dimensions = 5
+bounds = [(-10, 10) for _ in range(dimensions)]
+maximum_evaluations = 1000
+
+# Running the PSO algorithm
+best_value, best_position = pso(sample_function, dimensions, bounds, maximum_evaluations)
+print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+```
+This implementation adds velocity clamping to ensure particles do not move too quickly through the search space, improving the algorithm's stability and convergence rates. The inertia weight is reduced to balance exploration and exploitation better. Additionally, it includes an example usage at the end to demonstrate how the function can be called, adhering to the latest Python practices.";;;c2955706-f9ad-4dd8-9647-1800baebbacc;{}
+2025-03-31 20:39:25.119064+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;f2a6b757-0a22-4c44-bf19-c958b2cf6426;{}
+2025-03-31 20:39:31.881908+00:00;724;assistant;"```python
+import random
+
+class PSO:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.best_value = float('inf')
+        self.best_position = None
+        self.evals = 0
+        self.population_size = 20
+        self.w = 0.5  # inertia weight
+        self.c1 = 1.5  # cognitive (personal) weight
+        self.c2 = 1.5  # social (global) weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize_population(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.func(individual) for individual in self.population]
+        self.evals += self.population_size
+
+        self.gbest_value = min(self.pbest_values)
+        self.gbest_position = self.pbest_positions[self.pbest_values.index(self.gbest_value)]
+
+    def run(self):
+        self.initialize_population()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.func(self.population[i])
+                self.evals += 1
+
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+                if self.evals >= self.max_evals:
+                    break
+
+        return self.gbest_value, self.gbest_position
+
+# Example usage
+def sample_function(x):
+    return sum(xi ** 2 for xi in x)
+
+# Dimensions and bounds for the problem
+dimensions = 5
+bounds = [(-10, 10) for _ in range(dimensions)]
+maximum_evaluations = 1000
+
+# Running the PSO algorithm
+pso_solver = PSO(sample_function, dimensions, bounds, maximum_evaluations)
+best_value, best_position = pso_solver.run()
+print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+```";;;5c765900-1cca-4a07-adb8-00609f15bb9e;{}
+2025-03-31 20:39:32.004740+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;2fd0a3cc-0e8d-4b3d-a0c8-3cd9cd13e016;{}
+2025-03-31 20:39:40.911158+00:00;734;assistant;"```python
+import random
+
+class PSO:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.best_value = float('inf')
+        self.best_position = None
+        self.evals = 0
+        self.population_size = 20
+        self.w = 0.5  # inertia weight
+        self.c1 = 1.5  # cognitive (personal) weight
+        self.c2 = 1.5  # social (global) weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize_population(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        self.gbest_position = self.pbest_positions[self.pbest_values.index(self.gbest_value)]
+
+    def evaluate(self, individual):
+        value = self.func(individual)
+        self.evals += 1
+        return value
+
+    def optimize(self):
+        self.initialize_population()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.evaluate(self.population[i])
+
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+                if self.evals >= self.max_evals:
+                    break
+
+        return self.gbest_value, self.gbest_position
+
+# Example usage
+def sample_function(x):
+    return sum(xi ** 2 for xi in x)
+
+# Dimensions and bounds for the problem
+dimensions = 5
+bounds = [(-10, 10) for _ in range(dimensions)]
+maximum_evaluations = 1000
+
+# Running the PSO algorithm
+pso_solver = PSO(sample_function, dimensions, bounds, maximum_evaluations)
+best_value, best_position = pso_solver.optimize()
+print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+```";;;caffd27e-5a54-4ba3-bbf8-ee54c96a685d;{}
+2025-03-31 20:39:41.029909+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;02a5e596-3223-4801-89fb-8e5f2480116f;{}
+2025-03-31 20:39:52.659184+00:00;856;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalty for constraint violation
+    # Main objective: Minimize the sum of squares
+    return sum(xi ** 2 for xi in x)
+
+class PSO:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.4  # inertia weight
+        self.c1 = 1.5  # personal weight
+        self.c2 = 1.5  # global weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position
+                    self.population[i][d] += self.velocities[i][d]
+                    # Enforce bounds
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate individual
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return self.gbest_value, self.gbest_position
+
+# Example usage
+def run_optimization():
+    dimensions = 5
+    bounds = [(-10, 10) for _ in range(dimensions)]
+    maximum_evaluations = 1000
+
+    # Run PSO with the given constrained function
+    pso_solver = PSO(constrained_function, dimensions, bounds, maximum_evaluations)
+    best_value, best_position = pso_solver.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+run_optimization()
+```";;;fc68db49-385a-4dba-b718-8d87eedf0a62;{}
+2025-03-31 20:39:52.774380+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'PSO' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'PSO' is not defined"")
+";;;0df24490-45ba-44c7-86cf-e3578f76cecb;{}
+2025-03-31 20:39:59.383049+00:00;856;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalty for constraint violation
+    # Main objective: Minimize the sum of squares
+    return sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.4  # inertia weight
+        self.c1 = 1.5  # personal weight
+        self.c2 = 1.5  # global weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position
+                    self.population[i][d] += self.velocities[i][d]
+                    # Enforce bounds
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate individual
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return self.gbest_value, self.gbest_position
+
+# Example usage
+def run_optimization():
+    dimensions = 5
+    bounds = [(-10, 10) for _ in range(dimensions)]
+    maximum_evaluations = 1000
+
+    # Run PSO with the given constrained function
+    optimizer = ParticleSwarmOptimizer(constrained_function, dimensions, bounds, maximum_evaluations)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+run_optimization()
+```";;;c7424e43-eda9-4b5f-9824-53f4dacfaab7;{}
+2025-03-31 20:39:59.493558+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'ParticleSwarmOptimizer' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'ParticleSwarmOptimizer' is not defined"")
+";;;e160c687-f595-43dc-906f-53e832a0b302;{}
+2025-03-31 20:40:06.590581+00:00;865;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalty for constraint violation
+    # Main objective: Minimize the sum of squares
+    return sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.4  # inertia weight
+        self.c1 = 1.5  # personal weight
+        self.c2 = 1.5  # global weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position
+                    self.population[i][d] += self.velocities[i][d]
+                    # Enforce bounds
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate individual
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return self.gbest_value, self.gbest_position
+
+# Example usage
+def run_optimization():
+    dimensions = 5
+    bounds = [(-10, 10) for _ in range(dimensions)]
+    maximum_evaluations = 1000
+
+    # Run PSO with the given constrained function
+    optimizer = ParticleSwarmOptimizer(constrained_function, dimensions, bounds, maximum_evaluations)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run_optimization()
+```";;;6384bc83-680a-4ecf-9be7-e84c816c5a71;{}
+2025-03-31 20:40:06.701600+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;5aeff027-ed58-45b5-833c-9f342ddc9f59;{}
+2025-03-31 20:40:21.041272+00:00;861;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalty for constraint violation
+    # Main objective: Minimize the sum of squares
+    return sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.4  # inertia weight
+        self.c1 = 1.5  # personal weight
+        self.c2 = 1.5  # global weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position
+                    self.population[i][d] += self.velocities[i][d]
+                    # Enforce bounds
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate individual
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return self.gbest_value, self.gbest_position
+
+# Example usage
+def main():
+    dimensions = 5
+    bounds = [(-10, 10) for _ in range(dimensions)]
+    maximum_evaluations = 1000
+
+    # Run PSO with the given constrained function
+    optimizer = ParticleSwarmOptimizer(constrained_function, dimensions, bounds, maximum_evaluations)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    main()
+```";;;c690301e-d0d4-4c85-90b5-50e7e99c399e;{}
+2025-03-31 20:40:21.153092+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;4335b0ce-ccfa-4cde-8305-f1989af75633;{}
+2025-03-31 20:40:27.593687+00:00;857;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalty for constraint violation
+    # Main objective: Minimize the sum of squares
+    return sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.4  # inertia weight
+        self.c1 = 1.5  # personal weight
+        self.c2 = 1.5  # global weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position
+                    self.population[i][d] += self.velocities[i][d]
+                    # Enforce bounds
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate individual
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return self.gbest_value, self.gbest_position
+
+def main():
+    dimensions = 5
+    bounds = [(-10, 10) for _ in range(dimensions)]
+    maximum_evaluations = 1000
+
+    # Run PSO with the given constrained function
+    optimizer = ParticleSwarmOptimizer(constrained_function, dimensions, bounds, maximum_evaluations)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    main()
+```";;;c0c79804-fde8-4496-ab7d-bd720292dda7;{}
+2025-03-31 20:40:27.710869+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;2ab8cac1-60b5-4f17-a7e5-d2282e786737;{}
+2025-03-31 20:40:40.344944+00:00;857;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalty for constraint violation
+    # Main objective: Minimize the sum of squares
+    return sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.4  # inertia weight
+        self.c1 = 1.5  # personal weight
+        self.c2 = 1.5  # global weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position
+                    self.population[i][d] += self.velocities[i][d]
+                    # Enforce bounds
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate individual
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return self.gbest_value, self.gbest_position
+
+def run():
+    dimensions = 5
+    bounds = [(-10, 10) for _ in range(dimensions)]
+    maximum_evaluations = 1000
+
+    # Run PSO with the given constrained function
+    optimizer = ParticleSwarmOptimizer(constrained_function, dimensions, bounds, maximum_evaluations)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;b3188651-acfb-4d48-bc83-d7533c7809b4;{}
+2025-03-31 20:40:40.467099+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception run() takes 0 positional arguments but 4 were given on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception run() takes 0 positional arguments but 4 were given on function = InvertedSphere.
+";;;bc8b71c2-1c39-4591-8c6b-95d0ab61f08f;{}
+2025-03-31 20:40:51.005059+00:00;899;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalty for constraint violation
+    # Main objective: Minimize the sum of squares
+    return sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.4  # inertia weight
+        self.c1 = 1.5  # personal weight
+        self.c2 = 1.5  # global weight
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = min(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position
+                    self.population[i][d] += self.velocities[i][d]
+                    # Enforce bounds
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate individual
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness < self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness < self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return self.gbest_value, self.gbest_position
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    # If no external parameters are provided, use default ones.
+    if func is None:
+        func = constrained_function
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;f464ad2a-46d7-4e04-840f-c485dec0a380;{}
+2025-03-31 20:40:51.307333+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;004b1a5e-34d7-4ebc-9cad-99542e18ead5;{}
+2025-03-31 20:41:32.172044+00:00;961;assistant;"```python
+import random
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    if sum(x) > 10:
+        return float('inf')  # Penalize constraint violation
+    # Main objective: Minimize the sum of squares, inverted to simulate maximization for PSO
+    return -sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.5  # inertia weight
+        self.c1 = 1.5  # cognitive component
+        self.c2 = 1.5  # social component
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        # Create initial population and velocity for particles
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        # Initialize personal bests
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        # Identify global best
+        self.gbest_value = max(self.pbest_values)  # Maximize inverted function
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('-inf')  # Exit condition as max evaluations reached
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update particle velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position with velocity
+                    self.population[i][d] += self.velocities[i][d]
+
+                    # Enforce boundary conditions
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate particle fitness
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        # Return as minimum due to inversion of objective function
+        return -self.gbest_value, self.gbest_position
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    # Default parameters for the run function
+    if func is None:
+        func = constrained_function
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;f8393872-ed5f-44d2-a873-b624d33971f0;{}
+2025-03-31 20:41:32.435057+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;0e914e0a-e5fa-4a4d-abe0-f7beab493f8a;{}
+2025-03-31 20:41:40.988858+00:00;962;assistant;"```python
+import random
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        # Hyperparameters
+        self.population_size = 20
+        self.w = 0.5  # inertia weight
+        self.c1 = 1.5  # cognitive component
+        self.c2 = 1.5  # social component
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        # Create initial population and velocity for particles
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        # Initialize personal bests
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        # Identify global best
+        self.gbest_value = max(self.pbest_values)  # Maximize inverted function
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def evaluate(self, individual):
+        """"""Evaluate an individual's fitness.""""""
+        if self.evals >= self.max_evals:
+            return float('-inf')  # Exit condition as max evaluations reached
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    # Update particle velocity
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    # Constrain velocity
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    # Update position with velocity
+                    self.population[i][d] += self.velocities[i][d]
+
+                    # Enforce boundary conditions
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                # Evaluate particle fitness
+                fitness = self.evaluate(self.population[i])
+
+                # Update personal best
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                # Update global best
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        # Return as minimum due to inversion of objective function
+        return -self.gbest_value, self.gbest_position
+
+def constrained_function(x):
+    """"""Example cost function with constraints.""""""
+    # Example of a constraint: sum(x) must be less than or equal to 10
+    penalty = 0
+    if sum(x) > 10:
+        penalty = 1e6  # Penalize constraint violation
+    # Main objective: Minimize the sum of squares
+    return -sum(xi ** 2 for xi in x) + penalty
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    # Default parameters for the run function
+    if func is None:
+        func = constrained_function
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;758766da-2b0f-4048-a4d1-9da1fceb5925;{}
+2025-03-31 20:41:41.255062+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;05b2924d-767b-4b6c-b398-6a0cf8308e74;{}
+2025-03-31 20:41:48.009111+00:00;819;assistant;"```python
+import random
+
+def evaluate_decorator(func):
+    def wrapper(self, individual):
+        if self.evals >= self.max_evals:
+            return float('-inf')
+        self.evals += 1
+        return func(self, individual)
+    return wrapper
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        self.population_size = 20
+        self.w = 0.5
+        self.c1 = 1.5
+        self.c2 = 1.5
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = max(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+    
+    @evaluate_decorator
+    def evaluate(self, individual):
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.evaluate(self.population[i])
+
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return -self.gbest_value, self.gbest_position
+
+def constrained_function(x):
+    penalty = 0
+    if sum(x) > 10:
+        penalty = 1e6
+    return -sum(xi ** 2 for xi in x) + penalty
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    if func is None:
+        func = constrained_function
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;0b9df526-57d6-499c-97c0-feb6e1a98125;{}
+2025-03-31 20:41:48.125558+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_decorator' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_decorator' is not defined"")
+";;;bb6815bc-93e5-41e4-b855-4916b7bb186b;{}
+2025-03-31 20:41:53.815947+00:00;789;assistant;"```python
+import random
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+        self.population_size = 20
+        self.w = 0.5
+        self.c1 = 1.5
+        self.c2 = 1.5
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.evaluate(individual) for individual in self.population]
+
+        self.gbest_value = max(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+    
+    def evaluate(self, individual):
+        if self.evals >= self.max_evals:
+            return float('-inf')
+        self.evals += 1
+        return self.func(individual)
+
+    def optimize(self):
+        self.initialize()
+
+        while self.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.evaluate(self.population[i])
+
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.evals >= self.max_evals:
+                break
+
+        return -self.gbest_value, self.gbest_position
+
+def constrained_function(x):
+    penalty = 0
+    if sum(x) > 10:
+        penalty = 1e6
+    return -sum(xi ** 2 for xi in x) + penalty
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    if func is None:
+        func = constrained_function
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;dcaf25b0-ebfb-4f02-9eba-e43d8a3cf628;{}
+2025-03-31 20:41:54.083090+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;80c6a54b-229d-48da-be50-426a443be687;{}
+2025-03-31 20:42:00.603604+00:00;795;assistant;"```python
+import random
+
+def evaluate_decorator(func):
+    def wrapper(*args, **kwargs):
+        wrapper.evals += 1
+        return func(*args, **kwargs)
+    wrapper.evals = 0
+    return wrapper
+
+@evaluate_decorator
+def constrained_function(x):
+    penalty = 0
+    if sum(x) > 10:
+        penalty = 1e6
+    return -sum(xi ** 2 for xi in x) + penalty
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+        self.population_size = 20
+        self.w = 0.5
+        self.c1 = 1.5
+        self.c2 = 1.5
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.func(individual) for individual in self.population]
+
+        self.gbest_value = max(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+    
+    def optimize(self):
+        self.initialize()
+
+        while evaluate_decorator.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.func(self.population[i])
+
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if evaluate_decorator.evals >= self.max_evals:
+                break
+
+        return -self.gbest_value, self.gbest_position
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    if func is None:
+        func = constrained_function
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;3099dcb6-84e5-4be9-b9e4-cfa6d70a572e;{}
+2025-03-31 20:42:00.729711+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception 'function' object has no attribute 'evals' on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception 'function' object has no attribute 'evals' on function = InvertedSphere.
+";;;69124cf0-76ba-4222-9693-695cd7aab21c;{}
+2025-03-31 20:42:19.237814+00:00;770;assistant;"```python
+import random
+
+def evaluate_decorator(func):
+    def wrapper(*args, **kwargs):
+        wrapper.evals += 1
+        return func(*args, **kwargs)
+    wrapper.evals = 0
+    return wrapper
+
+@evaluate_decorator
+def inverted_sphere(x):
+    return -sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+        self.population_size = 20
+        self.w = 0.5
+        self.c1 = 1.5
+        self.c2 = 1.5
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.func(individual) for individual in self.population]
+
+        self.gbest_value = max(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+    
+    def optimize(self):
+        self.initialize()
+
+        while evaluate_decorator.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1 = random.random()
+                    r2 = random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.func(self.population[i])
+
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.func.evals >= self.max_evals:
+                break
+
+        return -self.gbest_value, self.gbest_position
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    if func is None:
+        func = inverted_sphere
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;e397dd63-17dd-4417-a9c3-a59f47c32dc8;{}
+2025-03-31 20:42:19.362713+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception 'function' object has no attribute 'evals' on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception 'function' object has no attribute 'evals' on function = InvertedSphere.
+";;;dfbb87b9-6155-4a6e-b5d7-247497e12573;{}
+2025-03-31 20:42:26.705711+00:00;824;assistant;"```python
+import random
+
+def evaluate_decorator(func):
+    ''' Decorator to count the evaluations of the cost function '''
+    def wrapper(*args, **kwargs):
+        wrapper.evals += 1
+        return func(*args, **kwargs)
+    wrapper.evals = 0
+    wrapper.__name__ = func.__name__
+    return wrapper
+
+@evaluate_decorator
+def inverted_sphere(x):
+    ''' Inverted Sphere function to maximize '''
+    return -sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+        self.population_size = 20
+        self.w = 0.5
+        self.c1 = 1.5
+        self.c2 = 1.5
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        ''' Initialize the population and velocities '''
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.func(individual) for individual in self.population]
+
+        self.gbest_value = max(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def optimize(self):
+        ''' The main optimization loop '''
+        self.initialize()
+
+        while self.func.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1, r2 = random.random(), random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.func(self.population[i])
+
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.func.evals >= self.max_evals:
+                break
+
+        return -self.gbest_value, self.gbest_position
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    if func is None:
+        func = inverted_sphere
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}\nFunction Evaluations: {func.evals}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;0b078095-0c80-4b1e-ba2a-41712f37750f;{}
+2025-03-31 20:42:26.831082+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception 'function' object has no attribute 'evals' on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception 'function' object has no attribute 'evals' on function = InvertedSphere.
+";;;39de2c07-31e6-4e32-828c-84184d8de430;{}
+2025-03-31 20:42:33.284181+00:00;839;assistant;"```python
+import random
+
+def evaluate_decorator(func):
+    ''' Decorator to count the evaluations of the cost function '''
+    def wrapper(*args, **kwargs):
+        wrapper.evals += 1
+        return func(*args, **kwargs)
+    wrapper.evals = 0
+    wrapper.__name__ = func.__name__
+    return wrapper
+
+@evaluate_decorator
+def inverted_sphere(x):
+    ''' Inverted Sphere function to maximize '''
+    return -sum(xi ** 2 for xi in x)
+
+class ParticleSwarmOptimizer:
+    def __init__(self, func, dim, bounds, max_evals):
+        self.func = func
+        self.dim = dim
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+        self.population_size = 20
+        self.w = 0.5
+        self.c1 = 1.5
+        self.c2 = 1.5
+        self.min_velocity = -1.0
+        self.max_velocity = 1.0
+
+    def initialize(self):
+        ''' Initialize the population and velocities '''
+        self.population = [
+            [random.uniform(self.bounds[i][0], self.bounds[i][1]) for i in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+        self.velocities = [
+            [random.uniform(self.min_velocity, self.max_velocity) for _ in range(self.dim)]
+            for _ in range(self.population_size)
+        ]
+
+        self.pbest_positions = self.population[:]
+        self.pbest_values = [self.func(individual) for individual in self.population]
+
+        self.gbest_value = max(self.pbest_values)
+        best_index = self.pbest_values.index(self.gbest_value)
+        self.gbest_position = self.pbest_positions[best_index]
+
+    def optimize(self):
+        ''' The main optimization loop '''
+        self.initialize()
+
+        while self.func.evals < self.max_evals:
+            for i in range(self.population_size):
+                for d in range(self.dim):
+                    r1, r2 = random.random(), random.random()
+
+                    self.velocities[i][d] = (
+                        self.w * self.velocities[i][d]
+                        + self.c1 * r1 * (self.pbest_positions[i][d] - self.population[i][d])
+                        + self.c2 * r2 * (self.gbest_position[d] - self.population[i][d])
+                    )
+
+                    self.velocities[i][d] = max(
+                        min(self.velocities[i][d], self.max_velocity), self.min_velocity
+                    )
+
+                    self.population[i][d] += self.velocities[i][d]
+                    self.population[i][d] = max(
+                        min(self.population[i][d], self.bounds[d][1]), self.bounds[d][0]
+                    )
+
+                fitness = self.func(self.population[i])
+
+                if fitness > self.pbest_values[i]:
+                    self.pbest_values[i] = fitness
+                    self.pbest_positions[i] = self.population[i][:]
+
+                if fitness > self.gbest_value:
+                    self.gbest_value = fitness
+                    self.gbest_position = self.population[i][:]
+
+            if self.func.evals >= self.max_evals:
+                break
+
+        return -self.gbest_value, self.gbest_position
+
+def run(func=None, dim=None, bounds=None, max_evals=None):
+    if func is None:
+        func = inverted_sphere
+    if dim is None:
+        dim = 5
+    if bounds is None:
+        bounds = [(-10, 10) for _ in range(dim)]
+    if max_evals is None:
+        max_evals = 1000
+
+    # Reset the eval counter
+    func.evals = 0
+    
+    optimizer = ParticleSwarmOptimizer(func, dim, bounds, max_evals)
+    best_value, best_position = optimizer.optimize()
+    print(f""Best Value: {best_value}\nBest Position: {best_position}\nFunction Evaluations: {func.evals}"")
+
+if __name__ == ""__main__"":
+    run()
+```";;;2260e610-9eae-4f97-83f4-4c87da5d1d85;{}

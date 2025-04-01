@@ -1,0 +1,467 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-23 07:39:06.926092+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when self.func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;a67f751a-9baa-4a28-83ab-3be8d00f9065;{}
+2025-03-23 07:39:06.926275+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;458527f5-06ba-4666-b76f-215a3eed02c6;{}
+2025-03-23 07:39:10.507099+00:00;384;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def generate_solution():
+        """"""Generate a potential solution within the bounds.""""""
+        return [random.uniform(b[0], b[1]) for b in bounds]
+    
+    def mutate_solution(solution, scale=0.1):
+        """"""Mutate the solution slightly by a random factor.""""""
+        return [max(min(x + random.uniform(-scale, scale), bounds[i][1]), bounds[i][0]) for i, x in enumerate(solution)]
+    
+    def crossover(parent1, parent2):
+        """"""Perform crossover between two solutions to create a child.""""""
+        return [random.choice(pair) for pair in zip(parent1, parent2)]
+    
+    best_solution = generate_solution()
+    best_fitness = func(best_solution)
+    evals = 1  # Count the initial evaluation
+
+    while evals < max_evals:
+        # Randomly select two solutions and create a child solution
+        solution1 = generate_solution()
+        solution2 = generate_solution()
+        child = crossover(solution1, solution2)
+
+        # Optionally mutate the child solution
+        if random.random() < 0.5:
+            child = mutate_solution(child)
+
+        # Evaluate new child solution
+        child_fitness = func(child)
+        evals += 1
+
+        # Check if the new child is a better solution
+        if child_fitness < best_fitness:
+            best_solution = child
+            best_fitness = child_fitness
+
+    # Return the fitness of the best found solution
+    return best_fitness
+```
+
+This code implements a simple hybrid metaheuristic where solutions are generated, evaluated, and potentially improved through crossover and mutation strategies. It carefully counts the evaluations and searches for minimal values as directed. The code is arranged to ensure functionality within the bounds and constraints of the given framework.";;;62440000-3f14-47a9-8ca2-b90b3cda10b7;{}
+2025-03-23 18:29:06.273314+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 5641.829849507089
+mean result of function 2 dim 10 = 172.1013596106298
+mean result of function 3 dim 10 = 33.740573771654276
+mean result of function 4 dim 10 = 55.30121246310232
+mean result of function 5 dim 10 = 588.7928829271558
+mean result of function 6 dim 10 = 4159728.0176112014
+mean result of function 7 dim 10 = 66.69795214673407
+mean result of function 8 dim 10 = 34.06798651668115
+mean result of function 9 dim 10 = 321.36320967958727
+mean result of function 10 dim 10 = 113.36547299442182
+mean result of function 11 dim 10 = 283.8918576063333
+mean result of function 12 dim 10 = 203.30657884489136
+
+and the statistic result is:
+not enough data
+";;;52709f71-3be1-46d4-bcfb-e2a73e6cc624;{}
+2025-03-23 18:29:12.398310+00:00;581;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def generate_solution():
+        """"""Generate a potential solution within the bounds.""""""
+        return [random.uniform(b[0], b[1]) for b in bounds]
+    
+    def mutate_solution(solution, scale=0.1):
+        """"""Mutate the solution slightly by a random factor.""""""
+        return [max(min(x + random.uniform(-scale, scale), bounds[i][1]), bounds[i][0]) for i, x in enumerate(solution)]
+    
+    def crossover(parent1, parent2):
+        """"""Perform crossover between two solutions to create a child.""""""
+        return [random.choice(pair) for pair in zip(parent1, parent2)]
+
+    def selection(pool, fitness_pool):
+        """"""Select two parents using tournament selection.""""""
+        tournament_size = 3
+        selected = random.sample(range(len(pool)), tournament_size)
+        selected.sort(key=lambda i: fitness_pool[i])
+        return pool[selected[0]], pool[selected[1]]
+
+    # Initialize a population of solutions
+    population_size = 20
+    population = [generate_solution() for _ in range(population_size)]
+    fitness_population = [func(indiv) for indiv in population]
+    evals = population_size  # Count the initial evaluations
+
+    # Record the best solution
+    best_solution = min(zip(population, fitness_population), key=lambda x: x[1])
+    best_fitness = best_solution[1]
+
+    while evals < max_evals:
+        new_population = []
+        new_fitness = []
+
+        for _ in range(population_size):
+            # Select parents
+            parent1, parent2 = selection(population, fitness_population)
+
+            # Crossover and possibly mutate
+            child = crossover(parent1, parent2)
+            if random.random() < 0.3:
+                child = mutate_solution(child)
+
+            # Evaluate new child solution
+            child_fitness = func(child)
+            evals += 1
+
+            # Add to the new population
+            new_population.append(child)
+            new_fitness.append(child_fitness)
+
+            # Check for a new best solution
+            if child_fitness < best_fitness:
+                best_solution = child
+                best_fitness = child_fitness
+
+        # Replace the old population with the new one
+        population = new_population
+        fitness_population = new_fitness
+
+    # Return the fitness of the best found solution
+    return best_fitness
+```
+
+This updated algorithm employs a simple evolutionary strategy with a tournament selection mechanism for parent selection, crossover for new solution creation, and mutation for exploration. The population-based approach enhances explorative capabilities, ensuring that diverse regions of the search space are covered, potentially improving average outcomes over a series of runs. The consideration of a small population size maintains computational feasibility within constraint evaluation limits.";;;0e025c31-f5a7-4beb-82ea-8fe5e00b35d1;{}
+2025-03-24 04:38:55.334121+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 0.028470319847970254
+mean result of function 2 dim 10 = 9.573580458380683
+mean result of function 3 dim 10 = 35.00322991232508
+mean result of function 4 dim 10 = 30.71151923236328
+mean result of function 5 dim 10 = 575.9536383314538
+mean result of function 6 dim 10 = 2041.929335077075
+mean result of function 7 dim 10 = 126.97871443807189
+mean result of function 8 dim 10 = 83.3177860609216
+mean result of function 9 dim 10 = 265.3517216611569
+mean result of function 10 dim 10 = 429.2174910184874
+mean result of function 11 dim 10 = 529.9181942823867
+mean result of function 12 dim 10 = 217.15193112161168
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The current solution is significantly better on function 1 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 10 dim 10 with p-value=8.121073122605465e-09
+The best-so-far solution is significantly better on function 11 dim 10 with p-value=0.02657776336501617
+There is no significant difference between current and best-so-far solutions on function 12 dim 10 with p-value=0.16016393690179076
+The current solution is significantly better on function 2 dim 10 with p-value=2.8719490663203234e-11
+There is no significant difference between current and best-so-far solutions on function 3 dim 10 with p-value=0.7674679739607242
+The current solution is significantly better on function 4 dim 10 with p-value=1.394973133218814e-10
+There is no significant difference between current and best-so-far solutions on function 5 dim 10 with p-value=0.5843624220907104
+The current solution is significantly better on function 6 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 7 dim 10 with p-value=0.0019045321644495484
+The best-so-far solution is significantly better on function 8 dim 10 with p-value=0.019494409706943057
+The current solution is significantly better on function 9 dim 10 with p-value=3.9553873778822414e-05
+
+";;;27efcaf7-8922-4eec-a94c-7fadba064a18;{}
+2025-03-24 04:39:08.038699+00:00;735;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def generate_solution():
+        """"""Generate a potential solution within the bounds.""""""
+        return [random.uniform(b[0], b[1]) for b in bounds]
+    
+    def mutate_solution(solution, scale=0.1):
+        """"""Mutate the solution slightly by a random factor.""""""
+        return [max(min(x + random.uniform(-scale, scale), bounds[i][1]), bounds[i][0]) for i, x in enumerate(solution)]
+    
+    def polynomial_mutation(solution, mutation_rate=0.1, eta=20):
+        """"""Apply polynomial mutation to introduce diversity.""""""
+        for i in range(len(solution)):
+            if random.random() < mutation_rate:
+                delta = random.random()
+                if delta < 0.5:
+                    delta_q = (2 * delta) ** (1 / (eta + 1)) - 1
+                else:
+                    delta_q = 1 - (2 * (1 - delta)) ** (1 / (eta + 1))
+                solution[i] = max(min(solution[i] + delta_q, bounds[i][1]), bounds[i][0])
+        return solution
+    
+    def crossover(parent1, parent2):
+        """"""Perform crossover between two solutions to create a child.""""""
+        alpha = random.random()
+        return [alpha * x + (1 - alpha) * y for x, y in zip(parent1, parent2)]
+
+    def selection(pool, fitness_pool):
+        """"""Select two parents using tournament selection.""""""
+        tournament_size = 3
+        selected = random.sample(range(len(pool)), tournament_size)
+        selected.sort(key=lambda i: fitness_pool[i])
+        return pool[selected[0]], pool[selected[1]]
+
+    # Initialize a population of solutions
+    population_size = 20
+    population = [generate_solution() for _ in range(population_size)]
+    fitness_population = [func(indiv) for indiv in population]
+    evals = population_size  # Count the initial evaluations
+
+    # Record the best solution
+    best_solution = min(zip(population, fitness_population), key=lambda x: x[1])
+    best_fitness = best_solution[1]
+
+    while evals < max_evals:
+        new_population = []
+        new_fitness = []
+
+        for _ in range(population_size):
+            # Select parents
+            parent1, parent2 = selection(population, fitness_population)
+
+            # Crossover the parents
+            child = crossover(parent1, parent2)
+            
+            # Apply polynomial mutation for improved exploration
+            if random.random() < 0.3:
+                child = polynomial_mutation(child)
+
+            # Evaluate new child solution
+            child_fitness = func(child)
+            evals += 1
+
+            # Add to the new population
+            new_population.append(child)
+            new_fitness.append(child_fitness)
+
+            # Check for a new best solution
+            if child_fitness < best_fitness:
+                best_solution = child
+                best_fitness = child_fitness
+
+        # Replace the old population with the new one
+        population = new_population
+        fitness_population = new_fitness
+
+    # Return the fitness of the best found solution
+    return best_fitness
+```
+
+I have added polynomial mutation to provide more diverse exploration of the solution space, which should help improve performance on more complex landscapes. This change is targeted at achieving better results on a wider array of functions by exploring more possibilities during mutation. The crossover mechanism retains blending between solutions using a weighted average for smoother combinations of parent characteristics.";;;efe7ba7d-79e0-45ef-8a9e-7b2cfc9b5705;{}
+2025-03-24 14:46:16.263635+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 6654.453003890464
+mean result of function 2 dim 10 = 781.6108389969886
+mean result of function 3 dim 10 = 46.30880996069584
+mean result of function 4 dim 10 = 22.58551938387467
+mean result of function 5 dim 10 = 455.4877831723009
+mean result of function 6 dim 10 = 147940480.11218175
+mean result of function 7 dim 10 = 143.9712736754914
+mean result of function 8 dim 10 = 263.88430404906904
+mean result of function 9 dim 10 = 422.0469300675065
+mean result of function 10 dim 10 = 731.6843230544057
+mean result of function 11 dim 10 = 1029.6593083582113
+mean result of function 12 dim 10 = 519.0818685313056
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The best-so-far solution is significantly better on function 1 dim 10 with p-value=2.8719490663203234e-11
+There is no significant difference between current and best-so-far solutions on function 10 dim 10 with p-value=0.1241512810914928
+The best-so-far solution is significantly better on function 11 dim 10 with p-value=0.00041013072581951406
+The best-so-far solution is significantly better on function 12 dim 10 with p-value=3.5097576968084746e-11
+The best-so-far solution is significantly better on function 2 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 3 dim 10 with p-value=3.2610863452154165e-05
+The current solution is significantly better on function 4 dim 10 with p-value=0.0020019362197643445
+There is no significant difference between current and best-so-far solutions on function 5 dim 10 with p-value=0.10707027092382157
+The best-so-far solution is significantly better on function 6 dim 10 with p-value=0.0047454249600479914
+There is no significant difference between current and best-so-far solutions on function 7 dim 10 with p-value=0.14328738474412253
+The best-so-far solution is significantly better on function 8 dim 10 with p-value=2.776958578613408e-06
+The best-so-far solution is significantly better on function 9 dim 10 with p-value=2.0532682990164667e-10
+
+";;;460d70a2-e77e-4fe5-8ba6-24715ca91a4d;{}
+2025-03-24 14:46:28.821928+00:00;599;assistant;"```python
+import random
+import math
+
+def run(func, dim, bounds, max_evals):
+    def generate_solution():
+        """"""Generate a potential solution within the bounds.""""""
+        return [random.uniform(b[0], b[1]) for b in bounds]
+    
+    def differential_evolution_mutation(target_idx, scale=0.8):
+        """"""Differential evolution mutation strategy.""""""
+        indices = list(range(population_size))
+        indices.remove(target_idx)
+        a, b, c = random.sample(indices, 3)
+        mutant = [
+            max(min(population[a][i] + scale * (population[b][i] - population[c][i]), bounds[i][1]), bounds[i][0])
+            for i in range(dim)
+        ]
+        return mutant
+    
+    def crossover(target, mutant, cr=0.9):
+        """"""Perform binomial crossover to create trial vector.""""""
+        return [
+            mutant[i] if random.random() < cr else target[i]
+            for i in range(dim)
+        ]
+
+    population_size = 20
+    population = [generate_solution() for _ in range(population_size)]
+    fitness_population = [func(indiv) for indiv in population]
+    evals = population_size  # Initial evaluations
+
+    # Record the best solution
+    best_idx = min(range(population_size), key=lambda i: fitness_population[i])
+    best_solution = population[best_idx]
+    best_fitness = fitness_population[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Generate a mutant solution
+            mutant = differential_evolution_mutation(i)
+            
+            # Crossover the target and mutant to produce a trial vector
+            trial = crossover(population[i], mutant)
+            
+            # Evaluate trial solution
+            trial_fitness = func(trial)
+            evals += 1
+            
+            # Selection: greedy replacement
+            if trial_fitness < fitness_population[i]:
+                population[i] = trial
+                fitness_population[i] = trial_fitness
+                
+                # Update best solution if the trial is better
+                if trial_fitness < best_fitness:
+                    best_solution = trial
+                    best_fitness = trial_fitness
+
+    # Return the fitness of the best found solution
+    return best_fitness
+```
+
+This updated code incorporates a differential evolution strategy, a potent technique for continuous optimization problems. By using mutation and crossover tailored to exploit population diversity through differential evolution, this approach facilitates effective exploration and exploitation of the search space. Here's how it works:
+
+- **Mutation:** A vector differential mutation creates new candidate solutions by adding weighted differences between population members to existing solutions.
+  
+- **Crossover:** A trial vector is developed via binomial crossover between the original and mutant vectors, ensuring diversity and broader search space coverage.
+
+This strategy is adept at dealing with various complex landscapes, which could provide more robust results across a range of test functions.";;;4a37a8fb-4a30-4256-9acc-abf264c4c1b7;{}
+2025-03-25 01:04:04.666387+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 1.864058475238936e-30
+mean result of function 2 dim 10 = 10.101255629799871
+mean result of function 3 dim 10 = 0.07831347509698676
+mean result of function 4 dim 10 = 20.925467621411386
+mean result of function 5 dim 10 = 1.499759782661857e-32
+mean result of function 6 dim 10 = 0.8174887810093204
+mean result of function 7 dim 10 = 21.306622298676512
+mean result of function 8 dim 10 = 6.660441982373453
+mean result of function 9 dim 10 = 229.32144964156817
+mean result of function 10 dim 10 = 122.88444144116995
+mean result of function 11 dim 10 = 95.47830627371235
+mean result of function 12 dim 10 = 163.43087912420444
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The current solution is significantly better on function 1 dim 10 with p-value=2.8719490663203234e-11
+The current solution is significantly better on function 10 dim 10 with p-value=2.792740078926976e-09
+The current solution is significantly better on function 11 dim 10 with p-value=1.1499274734848317e-06
+The current solution is significantly better on function 12 dim 10 with p-value=3.878714475901378e-11
+There is no significant difference between current and best-so-far solutions on function 2 dim 10 with p-value=0.9646228051136889
+The current solution is significantly better on function 3 dim 10 with p-value=2.8719490663203234e-11
+The current solution is significantly better on function 4 dim 10 with p-value=0.001268534539381128
+The current solution is significantly better on function 5 dim 10 with p-value=2.8719490663203234e-11
+The current solution is significantly better on function 6 dim 10 with p-value=2.8719490663203234e-11
+The current solution is significantly better on function 7 dim 10 with p-value=1.394973133218814e-10
+The current solution is significantly better on function 8 dim 10 with p-value=1.394973133218814e-10
+The current solution is significantly better on function 9 dim 10 with p-value=1.6931348391614488e-10
+
+";;;7b7a2e69-4f6d-4a17-aea3-9400157d3619;{}
+2025-03-25 01:04:11.063776+00:00;570;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def generate_solution():
+        """"""Generate a potential solution within the bounds.""""""
+        return [random.uniform(b[0], b[1]) for b in bounds]
+    
+    def differential_evolution_mutation(target_idx, scale=0.8):
+        """"""Differential evolution mutation strategy.""""""
+        indices = list(range(population_size))
+        indices.remove(target_idx)
+        a, b, c = random.sample(indices, 3)
+        mutant = [
+            max(min(population[a][i] + scale * (population[b][i] - population[c][i]), bounds[i][1]), bounds[i][0])
+            for i in range(dim)
+        ]
+        return mutant
+    
+    def crossover(target, mutant, cr=0.9):
+        """"""Perform binomial crossover to create trial vector.""""""
+        return [
+            mutant[i] if random.random() < cr else target[i]
+            for i in range(dim)
+        ]
+
+    # Dynamic adaptation of population size
+    population_size = max(4, min(100, dim * 10))
+    population = [generate_solution() for _ in range(population_size)]
+    fitness_population = [func(indiv) for indiv in population]
+    evals = population_size  # Initial evaluations
+
+    # Record the best solution
+    best_idx = min(range(population_size), key=lambda i: fitness_population[i])
+    best_solution = population[best_idx]
+    best_fitness = fitness_population[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Generate a mutant solution
+            mutant = differential_evolution_mutation(i)
+            
+            # Crossover the target and mutant to produce a trial vector
+            trial = crossover(population[i], mutant)
+            
+            # Evaluate trial solution
+            trial_fitness = func(trial)
+            evals += 1
+            
+            # Selection: greedy replacement
+            if trial_fitness < fitness_population[i]:
+                population[i] = trial
+                fitness_population[i] = trial_fitness
+                
+                # Update best solution if the trial is better
+                if trial_fitness < best_fitness:
+                    best_solution = trial
+                    best_fitness = trial_fitness
+
+    # Return the fitness of the best found solution
+    return best_fitness
+```
+
+This improved version of the differential evolution-based algorithm introduces a dynamic adaptation for population size. The population size is set between a minimum of 4 and a maximum of 100, determined proportionally to the problem dimension. This aims to adaptively balance exploration and exploitation efficiency given the problem's scope. This approach allows the algorithm to explore more thoroughly in larger spaces while keeping computational resources in check for smaller dimensions.";;;ba2a3b6b-fcda-499f-9a91-4bc5df469a31;{}

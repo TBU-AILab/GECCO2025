@@ -1,0 +1,12 @@
+\begin{tabular}{lrl}
+\toprule
+Unnamed: 0 & score & ranking \\
+\midrule
+ctxtfull\_sol\_6.py & 46 & 1.0E+00 \\
+ctxtfull\_sol\_7.py & 21 & 2.0E+00 \\
+ctxtfull\_sol\_5.py & 17 & 3.0E+00 \\
+ctxtfull\_sol\_0.py & 4 & 4.0E+00 \\
+random\_search\_sol\_0.py & -28 & 5.0E+00 \\
+ctxtfull\_sol\_4.py & -60 & 6.0E+00 \\
+\bottomrule
+\end{tabular}

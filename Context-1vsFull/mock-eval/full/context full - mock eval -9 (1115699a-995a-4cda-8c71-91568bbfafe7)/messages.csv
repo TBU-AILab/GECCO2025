@@ -1,0 +1,789 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:57:15.315529+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;9cacf782-d7df-469f-92e0-f082c2eca93e;{}
+2025-03-31 20:57:15.315716+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;32193c87-f3b1-49fa-aeb0-480ec598a406;{}
+2025-03-31 20:57:30.155979+00:00;459;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = [0.0] * dim
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = []
+    for _ in range(population_size):
+        individual = [random.uniform(low, high) for low, high in bounds]
+        population.append(individual)
+
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+
+        # Create new solutions through crossover and mutation
+        for _ in range(population_size):
+            # Select two parents from the population
+            parent1, parent2 = random.sample(population, 2)
+
+            # Crossover
+            crossover_point = random.randint(1, dim - 1)
+            offspring = parent1[:crossover_point] + parent2[crossover_point:]
+
+            # Mutation
+            mutation_probability = 0.1
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                # Mutation within bounds
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            # Add the offspring to the new population
+            new_population.append(offspring)
+
+        # Evaluate new population
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            # Update population
+            worst_fitness_index = population_fitness.index(max(population_fitness))
+            if fitness < population_fitness[worst_fitness_index]:
+                population[worst_fitness_index] = individual
+                population_fitness[worst_fitness_index] = fitness
+
+            if eval_count >= max_evals:
+                break
+
+    return best
+```";;;cd5a298e-a3cc-4b0d-9f4a-ba7f32c3198a;{}
+2025-03-31 20:57:30.392260+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;53e36432-eee2-4b3a-bc29-0e760462fa9f;{}
+2025-03-31 20:57:54.724136+00:00;532;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = [0.0] * dim
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = []
+    for _ in range(population_size):
+        individual = [random.uniform(low, high) for low, high in bounds]
+        population.append(individual)
+
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        
+        # Dynamic mutation probability
+        mutation_probability = 0.2 * (1 - eval_count/max_evals)
+
+        # Create new solutions through crossover and mutation
+        for _ in range(population_size):
+            # Select two parents using tournament selection
+            tournament_size = 3
+            tournament = random.sample(population, tournament_size)
+            parent1 = min(tournament, key=lambda ind: population_fitness[population.index(ind)])
+            parent2 = min(random.sample(population, tournament_size), key=lambda ind: population_fitness[population.index(ind)])
+
+            # Crossover using uniform crossover
+            offspring = [parent1[i] if random.random() > 0.5 else parent2[i] for i in range(dim)]
+
+            # Mutation
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                # Mutation within bounds
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            # Add the offspring to the new population
+            new_population.append(offspring)
+
+        # Evaluate new population
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            # Replace the worst individual in the current population with the new individual if it's better
+            if fitness < max(population_fitness):
+                worst_fitness_index = population_fitness.index(max(population_fitness))
+                population[worst_fitness_index] = individual
+                population_fitness[worst_fitness_index] = fitness
+
+            if eval_count >= max_evals:
+                break
+
+    return best
+```";;;f9b8c84e-5806-40e3-99a1-4922119c4685;{}
+2025-03-31 20:57:54.968885+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;abf23846-63aa-43fe-b621-151ae4fed4c8;{}
+2025-03-31 20:58:00.239855+00:00;513;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.2, eval_count, max_evals)
+
+        # Tournament selection and crossover
+        for _ in range(population_size):
+            tournament_size = 3
+            selected = random.sample(population, tournament_size)
+            parent1 = min(selected, key=lambda ind: population_fitness[population.index(ind)])
+            selected = random.sample(population, tournament_size)
+            parent2 = min(selected, key=lambda ind: population_fitness[population.index(ind)])
+            
+            # Uniform crossover
+            offspring = [(p1 if random.random() < 0.5 else p2) for p1, p2 in zip(parent1, parent2)]
+
+            # Mutate the offspring
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population and keep track of evaluations
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            if fitness < best:
+                best = fitness
+
+            # Greedy replacement strategy: replace the worst in the current population if the new individual is better
+            if fitness < max(population_fitness):
+                worst_fitness_index = population_fitness.index(max(population_fitness))
+                population[worst_fitness_index] = individual
+                population_fitness[worst_fitness_index] = fitness
+
+            if eval_count >= max_evals:
+                break
+
+    return best
+```";;;a2c86b43-b0d4-46cb-9a2c-743f25ecda1b;{}
+2025-03-31 20:58:00.481524+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;87abee27-42aa-4417-823c-4b4db2b8a5ef;{}
+2025-03-31 20:58:07.901001+00:00;576;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = None
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.3, eval_count, max_evals)  # Slightly higher base mutation rate for diversity
+
+        # Tournament selection and crossover
+        for _ in range(population_size):
+            tournament_size = 3  # Small tournament size for faster convergence
+            selected_indices = random.sample(range(population_size), tournament_size)
+            parent1 = min((population[i] for i in selected_indices), key=lambda ind: population_fitness[population.index(ind)])
+            selected_indices = random.sample(range(population_size), tournament_size)
+            parent2 = min((population[i] for i in selected_indices), key=lambda ind: population_fitness[population.index(ind)])
+            
+            # Uniform crossover
+            offspring = [(p1 if random.random() < 0.5 else p2) for p1, p2 in zip(parent1, parent2)]
+
+            # Mutate the offspring
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population and keep track of evaluations
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            # Greedy replacement: replace the worst in the current population with the new individual if it's better
+            worst_fitness_index = population_fitness.index(max(population_fitness))
+            if fitness < population_fitness[worst_fitness_index]:
+                population[worst_fitness_index] = individual
+                population_fitness[worst_fitness_index] = fitness
+
+            if eval_count >= max_evals:
+                break
+
+    return best
+```";;;79adc0a6-671f-49a0-a5c4-4849b30df67f;{}
+2025-03-31 20:58:08.151899+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;bfd4c30d-d3d7-44da-aff8-451cb1b3e89b;{}
+2025-03-31 20:58:17.298715+00:00;596;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = None
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.3, eval_count, max_evals)  # Adaptive mutation for diversity
+
+        # Elitism: carry the best individual to the next generation
+        elite_count = 2
+        elite_indices = sorted(range(population_size), key=lambda i: population_fitness[i])[:elite_count]
+        new_population.extend([population[i] for i in elite_indices])
+
+        # Tournament selection and crossover
+        while len(new_population) < population_size:
+            tournament_size = 3
+            selected_indices = random.sample(range(population_size), tournament_size)
+            parent1 = min((population[i] for i in selected_indices), key=lambda ind: population_fitness[population.index(ind)])
+            selected_indices = random.sample(range(population_size), tournament_size)
+            parent2 = min((population[i] for i in selected_indices), key=lambda ind: population_fitness[population.index(ind)])
+            
+            # Uniform crossover
+            offspring = [(p1 if random.random() < 0.5 else p2) for p1, p2 in zip(parent1, parent2)]
+
+            # Mutate the offspring
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            # Update the population with the new individual
+            if eval_count >= max_evals:
+                break
+
+        # Update population and fitness list
+        population = new_population
+        population_fitness = [func(individual) for individual in new_population]
+        eval_count += len(new_population)  # Update evaluations count
+
+    return best
+```";;;39f34ab7-2b65-42a6-bed5-e34f09b57e63;{}
+2025-03-31 20:58:17.548772+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;5da78f9e-57e3-4976-ab84-449919d8ff33;{}
+2025-03-31 20:58:22.823687+00:00;573;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = None
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.3, eval_count, max_evals)
+
+        # Elitism: carry the best individual to the next generation
+        elite_count = 2
+        elite_indices = sorted(range(population_size), key=lambda i: population_fitness[i])[:elite_count]
+        new_population.extend([population[i] for i in elite_indices])
+
+        while len(new_population) < population_size:
+            # Tournament selection
+            tournament_size = 3
+            selected = random.sample(range(population_size), tournament_size)
+            parent1 = min((population[i] for i in selected), key=lambda ind: population_fitness[population.index(ind)])
+            selected = random.sample(range(population_size), tournament_size)
+            parent2 = min((population[i] for i in selected), key=lambda ind: population_fitness[population.index(ind)])
+            
+            # Arithmetic Crossover
+            alpha = random.random()
+            offspring = [alpha * p1 + (1 - alpha) * p2 for p1, p2 in zip(parent1, parent2)]
+
+            # Mutate the offspring
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population
+        new_fitness = []
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            new_fitness.append(fitness)
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            if eval_count >= max_evals:
+                break
+
+        # Update population and fitness list
+        population = new_population[:]
+        population_fitness = new_fitness[:]
+
+    return best
+```";;;c7c7f17d-2211-4678-94c5-c87328a05bbd;{}
+2025-03-31 20:58:23.075942+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;6fc341ed-5429-4fba-9382-42318f0db194;{}
+2025-03-31 20:58:33.099891+00:00;794;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = None
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.3, eval_count, max_evals)
+
+        # Elitism: carry the best individual to the next generation
+        elite_count = max(1, population_size // 10)
+        elite_indices = sorted(range(population_size), key=lambda i: population_fitness[i])[:elite_count]
+        new_population.extend([population[i] for i in elite_indices])
+
+        while len(new_population) < population_size:
+            # Tournament selection with higher diversity
+            tournament_size = 5
+            selected_indices = random.sample(range(population_size), tournament_size)
+            parent1 = min(selected_indices, key=lambda i: population_fitness[i])
+            selected_indices = random.sample(range(population_size), tournament_size)
+            parent2 = min(selected_indices, key=lambda i: population_fitness[i])
+            
+            # Simulated Binary Crossover (SBX)
+            eta_c = 2.0
+            offspring = []
+            for x1, x2 in zip(population[parent1], population[parent2]):
+                if random.random() <= 0.5:
+                    if abs(x1 - x2) > 1e-14:
+                        beta = 1.0 + (2.0 * min(x1 - bounds[0][0], x2 - bounds[0][0]) / abs(x2 - x1))
+                        alpha = 2.0 - beta**-(eta_c + 1.0)
+                        if random.random() <= 1.0 / alpha:
+                            beta_q = (random.random() * alpha)**(1.0 / (eta_c + 1.0))
+                        else:
+                            beta_q = (1.0 / (2.0 - alpha * random.random()))**(1.0 / (eta_c + 1.0))
+                        offspring_val = 0.5 * ((x1 + x2) - beta_q * abs(x1 - x2))
+                        offspring.append(min(max(offspring_val, bounds[0][0]), bounds[0][1]))
+                    else:
+                        offspring.append(x1)
+                else:
+                    offspring.append(x1)
+
+            # Mutate the offspring
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population
+        new_fitness = []
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            new_fitness.append(fitness)
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            if eval_count >= max_evals:
+                break
+
+        # Update population and fitness list
+        population = new_population[:]
+        population_fitness = new_fitness[:]
+
+    return best
+```";;;8a27b7b5-9928-4bf5-99e0-43c31241d811;{}
+2025-03-31 20:58:33.359439+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;1fd2657c-d1fc-42cd-9bba-3f435ccf0fb1;{}
+2025-03-31 20:58:41.768801+00:00;570;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = None
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.4, eval_count, max_evals)
+
+        # Carry the best individuals to the next generation (Elitism)
+        elite_count = max(1, population_size // 5)
+        elite_indices = sorted(range(population_size), key=lambda i: population_fitness[i])[:elite_count]
+        new_population.extend([population[i] for i in elite_indices])
+
+        # Generate new solutions
+        while len(new_population) < population_size:
+            # Tournament selection
+            tournament_size = 3
+            indices1 = random.sample(range(population_size), tournament_size)
+            indices2 = random.sample(range(population_size), tournament_size)
+            parent1 = min(indices1, key=lambda i: population_fitness[i])
+            parent2 = min(indices2, key=lambda i: population_fitness[i])
+            
+            # Average Crossover: blend parent genes
+            offspring = [(x + y) / 2.0 for x, y in zip(population[parent1], population[parent2])]
+
+            # Mutate the offspring with adaptive probability
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population
+        new_fitness = []
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            new_fitness.append(fitness)
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            if eval_count >= max_evals:
+                break
+
+        # Replace the old population with the new one
+        population = new_population
+        population_fitness = new_fitness
+
+    return best
+```";;;d8e489a1-913b-446f-b801-227b92240884;{}
+2025-03-31 20:58:42.009823+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;04fc29be-5900-4e33-a4b3-7627f3f34219;{}
+2025-03-31 20:58:48.941108+00:00;586;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = None
+    eval_count = 0
+
+    # Generate initial population
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.3, eval_count, max_evals)
+
+        # Carry the best individuals to the next generation (Elitism)
+        elite_count = max(1, population_size // 5)
+        elite_indices = sorted(range(population_size), key=lambda i: population_fitness[i])[:elite_count]
+        new_population.extend([population[i] for i in elite_indices])
+
+        # Generate new solutions
+        while len(new_population) < population_size:
+            # Tournament selection for diversity
+            tournament_size = 3
+            indices1 = random.sample(range(population_size), tournament_size)
+            indices2 = random.sample(range(population_size), tournament_size)
+            parent1 = min(indices1, key=lambda i: population_fitness[i])
+            parent2 = min(indices2, key=lambda i: population_fitness[i])
+            
+            # Blend Crossover: blend parent genes
+            blend_alpha = 0.5
+            offspring = [(blend_alpha * x + (1 - blend_alpha) * y) for x, y in zip(population[parent1], population[parent2])]
+
+            # Mutate the offspring with adaptive probability
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population
+        new_fitness = []
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            new_fitness.append(fitness)
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            if eval_count >= max_evals:
+                break
+
+        # Replace the old population with the new one
+        population = new_population
+        population_fitness = new_fitness
+
+    return best
+```";;;c9c09b67-157a-42e8-becb-549564997d9d;{}
+2025-03-31 20:58:49.188800+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;17daa183-eba1-4871-b684-caaaff492418;{}
+2025-03-31 20:58:54.945383+00:00;605;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize
+    best = float('inf')
+    best_solution = None
+    eval_count = 0
+
+    # Generate initial population with boundary constraints
+    population_size = 20
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(population_size)]
+    
+    # Evaluate initial population
+    population_fitness = []
+    for individual in population:
+        fitness = func(individual)
+        eval_count += 1
+        population_fitness.append(fitness)
+        if fitness < best:
+            best = fitness
+            best_solution = individual
+
+    # Adaptive mutation factor based on progress
+    def adaptive_mutation(prob_base, eval_count, max_evals):
+        return prob_base * (1 - eval_count / max_evals)
+
+    # Algorithm main loop
+    while eval_count < max_evals:
+        new_population = []
+        mutation_probability = adaptive_mutation(0.3, eval_count, max_evals)
+
+        # Elitism - carry the best individual(s) to the next generation
+        elite_count = max(1, population_size // 5)
+        elite_indices = sorted(range(population_size), key=lambda i: population_fitness[i])[:elite_count]
+        for index in elite_indices:
+            new_population.append(population[index])
+
+        # Generate new solutions
+        while len(new_population) < population_size:
+            # Tournament selection for diversity enhancement
+            tournament_size = 3
+            indices1 = random.sample(range(population_size), tournament_size)
+            indices2 = random.sample(range(population_size), tournament_size)
+            parent1 = population[min(indices1, key=lambda i: population_fitness[i])]
+            parent2 = population[min(indices2, key=lambda i: population_fitness[i])]
+            
+            # Blend Crossover: Combine genes from parents
+            blend_alpha = 0.5
+            offspring = [(blend_alpha * p1 + (1 - blend_alpha) * p2) for p1, p2 in zip(parent1, parent2)]
+
+            # Mutate the offspring with adaptive mutation
+            if random.random() < mutation_probability:
+                mutation_index = random.randint(0, dim - 1)
+                offspring[mutation_index] = random.uniform(bounds[mutation_index][0], bounds[mutation_index][1])
+
+            new_population.append(offspring)
+
+        # Evaluate the new population
+        new_fitness = []
+        for individual in new_population:
+            fitness = func(individual)
+            eval_count += 1
+            new_fitness.append(fitness)
+            if fitness < best:
+                best = fitness
+                best_solution = individual
+
+            if eval_count >= max_evals:
+                break
+
+        # Replace the old population with the new one
+        population = new_population
+        population_fitness = new_fitness
+
+    return best
+```";;;390cfd38-2fa5-45df-b99c-9a9bf742c245;{}

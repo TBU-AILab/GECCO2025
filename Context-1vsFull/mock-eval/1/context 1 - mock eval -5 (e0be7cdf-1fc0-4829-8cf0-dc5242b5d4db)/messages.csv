@@ -1,0 +1,1890 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:39:05.955656+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;408bdf37-0d19-4a54-b582-f16385c6ea8f;{}
+2025-03-31 20:39:05.955912+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;e792a8bb-f5d1-42c7-8ed2-bd2145338bfa;{}
+2025-03-31 20:39:11.165305+00:00;425;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize variables
+    best, evals, population_size = float('inf'), 0, 30
+    population = [ [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Define a helper function to evaluate the fitness
+    def evaluate(individual):
+        nonlocal evals
+        fitness = func(individual)
+        evals += 1
+        return fitness
+    
+    # Evaluate the initial population
+    fitnesses = [evaluate(individual) for individual in population]
+
+    while evals < max_evals:
+        # Create new individuals through a combination of genetic operations
+        new_population = []
+        for _ in range(population_size):
+            parent1, parent2 = random.sample(population, 2)
+            # Crossover
+            crossover_point = random.randint(1, dim - 1)
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+            # Mutation
+            if random.random() < 0.1:  # mutation rate
+                mutate_index = random.randrange(dim)
+                child[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+            new_population.append(child)
+        
+        # Evaluate the new population
+        new_fitnesses = [evaluate(individual) for individual in new_population]
+
+        # Select the best individuals for the next generation
+        combined_population = population + new_population
+        combined_fitnesses = fitnesses + new_fitnesses
+        
+        # Sort population based on fitness
+        sorted_population = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+        
+        # Select the top solutions
+        population, fitnesses = zip(*sorted_population[:population_size])
+
+        # Update the best solution found
+        if fitnesses[0] < best:
+            best = fitnesses[0]
+
+    return best
+```";;;ee8cadb3-c2a9-4bb1-88c0-9d1f38d700b4;{}
+2025-03-31 20:39:11.292404+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception can only concatenate tuple (not ""list"") to tuple on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception can only concatenate tuple (not ""list"") to tuple on function = InvertedSphere.
+";;;2603264a-3113-47cf-a0c3-1689259b5648;{}
+2025-03-31 20:39:16.629436+00:00;456;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize variables
+    best, evals, population_size = float('inf'), 0, 30
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Define a helper function to evaluate the fitness
+    def evaluate(individual):
+        nonlocal evals
+        fitness = func(individual)
+        evals += 1
+        return fitness
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(individual) for individual in population]
+
+    while evals < max_evals:
+        # Create new individuals through a combination of genetic operations
+        new_population = []
+        for _ in range(population_size):
+            parent1, parent2 = random.sample(population, 2)
+            # Crossover
+            crossover_point = random.randint(1, dim - 1)
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+            # Mutation
+            if random.random() < 0.1:  # mutation rate
+                mutate_index = random.randrange(dim)
+                child[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+            new_population.append(child)
+        
+        # Evaluate the new population
+        new_fitnesses = [evaluate(individual) for individual in new_population]
+
+        # Select the best individuals for the next generation
+        combined_population = population + new_population
+        combined_fitnesses = fitnesses + new_fitnesses
+        
+        # Sort population based on fitness
+        sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+        
+        # Select the top solutions
+        population, fitnesses = zip(*sorted_combined[:population_size])  # Convert tuples back to lists
+        population = [list(individual) for individual in population]
+        fitnesses = list(fitnesses)
+
+        # Update the best solution found
+        if fitnesses[0] < best:
+            best = fitnesses[0]
+
+    return best
+```";;;3574bc53-249a-4bc6-8a65-abeafc0a2433;{}
+2025-03-31 20:39:16.865299+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;16c513e5-cbac-4db6-9fc2-5455212b1b81;{}
+2025-03-31 20:39:26.505614+00:00;497;assistant;"```python
+import random
+
+# Count the number of evaluations
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize variables
+    best = float('inf')
+    population_size = 30
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Define a helper function to evaluate the fitness
+    def evaluate(individual):
+        global eval_count
+        if eval_count >= max_evals:
+            return float('inf')
+        fitness = func(individual)
+        eval_count += 1
+        return fitness
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(individual) for individual in population]
+
+    while eval_count < max_evals:
+        # Create new individuals through a combination of genetic operations
+        new_population = []
+        for _ in range(population_size):
+            parent1, parent2 = random.sample(population, 2)
+            # Crossover
+            crossover_point = random.randint(1, dim - 1)
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+            # Mutation
+            if random.random() < 0.1:  # mutation rate
+                mutate_index = random.randrange(dim)
+                child[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+            new_population.append(child)
+        
+        # Evaluate the new population
+        new_fitnesses = [evaluate(individual) for individual in new_population]
+
+        # Select the best individuals for the next generation
+        combined_population = population + new_population
+        combined_fitnesses = fitnesses + new_fitnesses
+        
+        # Sort population based on fitness
+        sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+        
+        # Select the top solutions
+        population, fitnesses = zip(*sorted_combined[:population_size])  # Convert tuples back to lists
+        population = [list(individual) for individual in population]
+        fitnesses = list(fitnesses)
+
+        # Update the best solution found
+        current_best = fitnesses[0]
+        if current_best < best:
+            best = current_best
+
+    return best, eval_count
+```";;;e1bd5099-705b-41a8-a61c-41d154c16f0c;{}
+2025-03-31 20:39:26.745321+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;bed26576-c28c-4c60-8846-42e4284118bf;{}
+2025-03-31 20:39:32.817665+00:00;507;assistant;"```python
+import random
+
+# Count the number of evaluations
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize variables
+    best_solution = None
+    best_fitness = float('inf')
+    population_size = 30
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Define a helper function to evaluate the fitness
+    def evaluate(individual):
+        global eval_count
+        if eval_count >= max_evals:
+            return float('inf')
+        fitness = func(individual)
+        eval_count += 1
+        return fitness
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(individual) for individual in population]
+
+    while eval_count < max_evals:
+        new_population = []
+        for _ in range(population_size):
+            parent1, parent2 = random.sample(population, 2)
+            # Crossover
+            crossover_point = random.randint(1, dim - 1)
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+            # Mutation
+            if random.random() < 0.1:  # mutation rate
+                mutate_index = random.randrange(dim)
+                child[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+            new_population.append(child)
+        
+        new_fitnesses = [evaluate(individual) for individual in new_population]
+        
+        combined_population = population + new_population
+        combined_fitnesses = fitnesses + new_fitnesses
+        
+        sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+        
+        population, fitnesses = zip(*sorted_combined[:population_size])
+        population = [list(individual) for individual in population]
+        fitnesses = list(fitnesses)
+
+        if fitnesses[0] < best_fitness:
+            best_fitness = fitnesses[0]
+            best_solution = population[0]
+
+        # Adding elitism by carrying best individual to next gen
+        worst_index = fitnesses.index(max(fitnesses))
+        population[worst_index] = best_solution
+        fitnesses[worst_index] = best_fitness
+
+    return best_solution, best_fitness, eval_count
+```";;;15a3b34b-0d26-46c5-ab6b-1fa6bcc102da;{}
+2025-03-31 20:39:33.056600+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;35207b66-4c40-4320-8a2a-6ecccfc2aac9;{}
+2025-03-31 20:39:38.217516+00:00;575;assistant;"```python
+import random
+
+# Count the number of evaluations
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize variables
+    best_solution = None
+    best_fitness = float('inf')
+    population_size = 30
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Define a helper function to evaluate the fitness
+    def evaluate(individual):
+        global eval_count
+        if eval_count >= max_evals:
+            return float('inf')
+        fitness = func(individual)
+        eval_count += 1
+        return fitness
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(individual) for individual in population]
+
+    # Iterate until max_evals or convergence criterion
+    while eval_count < max_evals:
+        new_population = crossover_and_mutation(population, dim, bounds, population_size)
+
+        new_fitnesses = [evaluate(individual) for individual in new_population]
+        
+        population, fitnesses = selection(population, new_population, fitnesses, new_fitnesses, population_size)
+
+        # Find the current best solution
+        if fitnesses[0] < best_fitness:
+            best_fitness = fitnesses[0]
+            best_solution = population[0]
+
+    return best_solution, best_fitness, eval_count
+
+def crossover_and_mutation(population, dim, bounds, population_size):
+    new_population = []
+    for _ in range(population_size):
+        parent1, parent2 = random.sample(population, 2)
+        # Crossover
+        crossover_point = random.randint(1, dim - 1)
+        child = parent1[:crossover_point] + parent2[crossover_point:]
+        # Mutation
+        if random.random() < 0.1:  # mutation rate
+            mutate_index = random.randrange(dim)
+            child[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+        new_population.append(child)
+    return new_population
+
+def selection(population, new_population, fitnesses, new_fitnesses, population_size):
+    combined_population = population + new_population
+    combined_fitnesses = fitnesses + new_fitnesses
+    
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+    
+    selected_population, selected_fitnesses = zip(*sorted_combined[:population_size])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+```";;;d32cfb88-a0cf-410c-a915-f1ae5838b495;{}
+2025-03-31 20:39:38.453861+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;04d7539f-6dcf-4ade-84b0-7cf2caaccadf;{}
+2025-03-31 20:39:48.058442+00:00;722;assistant;"```python
+import random
+
+# Count the number of evaluations
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Find the best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    if eval_count >= max_evals:
+        return float('inf')
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    # Tournament selection
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+```";;;20b9aba9-9270-432d-aa9f-79b2d314a21b;{}
+2025-03-31 20:39:48.183171+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception name 'max_evals' is not defined on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception name 'max_evals' is not defined on function = InvertedSphere.
+";;;1f96759e-cf78-40b3-a399-31a9b52c53f8;{}
+2025-03-31 20:40:12.211956+00:00;852;assistant;"```python
+import random
+
+# Define the evaluation count
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual, max_evals) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual, max_evals) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Find the best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual, max_evals):
+    global eval_count
+    if eval_count >= max_evals:
+        return float('inf')
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    # Tournament selection
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage with inverted sphere function
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;61291c31-9b0f-47a4-a574-f689cfba1a21;{}
+2025-03-31 20:40:12.333022+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;6f6e8725-f1b7-4292-9bb1-bc0113e407a7;{}
+2025-03-31 20:40:18.230216+00:00;852;assistant;"```python
+import random
+
+# Define the evaluation count
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual, max_evals) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual, max_evals) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Find the best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual, max_evals):
+    global eval_count
+    if eval_count >= max_evals:
+        return float('inf')
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    # Tournament selection
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage with inverted sphere function
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;cbab5dbe-31fc-4bb8-b57a-779191d71db8;{}
+2025-03-31 20:40:18.344141+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;44117af6-f7ca-4624-b684-dc965c956037;{}
+2025-03-31 20:40:23.866705+00:00;825;assistant;"```python
+import random
+
+# Define the evaluation count
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Find the best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    # Tournament selection
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage with inverted sphere function
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;b46420ca-9c1b-49f1-b5f3-2cfcc9f01c4e;{}
+2025-03-31 20:40:23.984556+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;c8f6f1be-10f1-41f0-b9e7-1c0266d60a0a;{}
+2025-03-31 20:40:33.665730+00:00;825;assistant;"```python
+import random
+
+# Define the evaluation count
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initialize parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Find the best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    # Tournament selection
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage with inverted sphere function
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;87d50451-330b-4ef3-8cf2-7f6d0f55645b;{}
+2025-03-31 20:40:33.784682+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;1e9fcade-d5ec-4d56-bdc5-0d891323a9e1;{}
+2025-03-31 20:40:43.062790+00:00;818;assistant;"```python
+import random
+
+# Evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [func_with_eval(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [func_with_eval(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def func_with_eval(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;a211b474-7d6f-429d-b589-1bca960cee85;{}
+2025-03-31 20:40:43.177293+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'func_with_eval' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'func_with_eval' is not defined"")
+";;;aab83ad6-d636-48d9-b07e-2ae065f86360;{}
+2025-03-31 20:40:52.295902+00:00;812;assistant;"```python
+import random
+
+# Evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;3cf1b731-fe3e-41b6-993b-d43367952ec7;{}
+2025-03-31 20:40:52.414430+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;037c6e86-51b4-4ea8-b8c5-f76349fb1c5a;{}
+2025-03-31 20:41:00.023665+00:00;815;assistant;"```python
+import random
+
+# Evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate_func(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate_func(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate_func(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;8170c8dc-5cf1-4046-88e9-6fe93429c36d;{}
+2025-03-31 20:41:00.142915+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+";;;d113fc5e-2bff-4cbd-adbe-b8c628aeec42;{}
+2025-03-31 20:41:05.319170+00:00;818;assistant;"```python
+import random
+
+# Evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [
+        [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] 
+        for _ in range(population_size)
+    ]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;96632926-8e21-4415-9035-9c7f4a441e82;{}
+2025-03-31 20:41:05.436568+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;db317144-d8e4-43bb-a309-faea760cf76b;{}
+2025-03-31 20:41:19.700424+00:00;821;assistant;"```python
+import random
+
+# Evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [
+        [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] 
+        for _ in range(population_size)
+    ]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate_func(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate_func(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate_func(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;cf002345-fcbd-4795-b85f-eaad4c6220ce;{}
+2025-03-31 20:41:19.823236+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+";;;b55c8600-3f90-44ba-8db0-5482b29020a6;{}
+2025-03-31 20:41:26.111363+00:00;819;assistant;"```python
+import random
+
+# Global evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [
+        [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] 
+        for _ in range(population_size)
+    ]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;c8da8b09-4865-4481-8e11-75b53ad41714;{}
+2025-03-31 20:41:26.225462+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;e3c4075c-61b8-4482-9288-a92182195423;{}
+2025-03-31 20:41:33.045392+00:00;822;assistant;"```python
+import random
+
+# Global evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [
+        [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] 
+        for _ in range(population_size)
+    ]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate_func(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate_func(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate_func(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;405cb831-ddf4-4151-bd10-d398a59d6a8c;{}
+2025-03-31 20:41:33.165459+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+";;;a60e8077-0dd0-42cd-985e-d3a11d09e1ef;{}
+2025-03-31 20:41:45.714960+00:00;819;assistant;"```python
+import random
+
+# Global evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [
+        [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] 
+        for _ in range(population_size)
+    ]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;0c05e285-164a-46d9-aa2f-3429d92e55e9;{}
+2025-03-31 20:41:45.828958+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate' is not defined"")
+";;;8b0f68d4-1021-488a-981a-9dce67004fa0;{}
+2025-03-31 20:41:51.825454+00:00;822;assistant;"```python
+import random
+
+# Global evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [
+        [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] 
+        for _ in range(population_size)
+    ]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate_func(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate_func(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate_func(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;1659733f-6d27-42e6-9586-2182357c761f;{}
+2025-03-31 20:41:51.942524+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'evaluate_func' is not defined"")
+";;;a3208150-8fde-49a8-82c5-09583f39f59d;{}
+2025-03-31 20:41:59.674229+00:00;819;assistant;"```python
+import random
+
+# Global evaluation counter
+eval_count = 0
+
+def run(func, dim, bounds, max_evals):
+    global eval_count
+    eval_count = 0
+
+    # Initial parameters
+    population_size = 30
+    crossover_rate = 0.7
+    mutation_rate = 0.1
+
+    # Initialize the population
+    population = [
+        [random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] 
+        for _ in range(population_size)
+    ]
+
+    # Evaluate the initial population
+    fitnesses = [evaluate(func, individual) for individual in population]
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        new_population = []
+
+        for _ in range(population_size // 2):
+            # Select parents
+            parents = select_parents(population, fitnesses)
+            # Crossover
+            offspring = crossover(parents, crossover_rate, dim)
+            # Mutation
+            offspring = [mutate(child, mutation_rate, dim, bounds) for child in offspring]
+            new_population.extend(offspring)
+
+        # Evaluate new population
+        new_fitnesses = [evaluate(func, individual) for individual in new_population]
+
+        # Select the next generation
+        population, fitnesses = selection(population, fitnesses, new_population, new_fitnesses)
+
+    # Best solution
+    best_index = fitnesses.index(min(fitnesses))
+    best_solution = population[best_index]
+    best_fitness = fitnesses[best_index]
+
+    return best_solution, best_fitness, eval_count
+
+def evaluate(func, individual):
+    global eval_count
+    eval_count += 1
+    return func(individual)
+
+def select_parents(population, fitnesses):
+    tournament_size = 3
+    selected = random.sample(list(zip(population, fitnesses)), tournament_size)
+    selected.sort(key=lambda x: x[1])
+    return selected[0][0], selected[1][0]
+
+def crossover(parents, crossover_rate, dim):
+    if random.random() < crossover_rate:
+        crossover_point = random.randint(1, dim - 1)
+        child1 = parents[0][:crossover_point] + parents[1][crossover_point:]
+        child2 = parents[1][:crossover_point] + parents[0][crossover_point:]
+        return [child1, child2]
+    else:
+        return [list(parents[0]), list(parents[1])]
+
+def mutate(individual, mutation_rate, dim, bounds):
+    if random.random() < mutation_rate:
+        mutate_index = random.randrange(dim)
+        individual[mutate_index] = random.uniform(bounds[mutate_index][0], bounds[mutate_index][1])
+    return individual
+
+def selection(old_population, old_fitnesses, new_population, new_fitnesses):
+    combined_population = old_population + new_population
+    combined_fitnesses = old_fitnesses + new_fitnesses
+
+    sorted_combined = sorted(zip(combined_population, combined_fitnesses), key=lambda x: x[1])
+
+    selected_population, selected_fitnesses = zip(*sorted_combined[:len(old_population)])
+    selected_population = [list(individual) for individual in selected_population]
+    selected_fitnesses = list(selected_fitnesses)
+
+    return selected_population, selected_fitnesses
+
+# Test function: Inverted Sphere
+def inverted_sphere(individual):
+    return -sum(x**2 for x in individual)
+
+# Example usage
+dim = 5
+bounds = [(-5.0, 5.0) for _ in range(dim)]
+max_evals = 1000
+
+best_solution, best_fitness, evals_used = run(inverted_sphere, dim, bounds, max_evals)
+print(""Best Solution:"", best_solution)
+print(""Best Fitness:"", best_fitness)
+print(""Evaluations Used:"", evals_used)
+```";;;a3f735c1-76f7-4dc6-a5b2-348049332bae;{}

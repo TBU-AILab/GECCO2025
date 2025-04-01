@@ -1,0 +1,691 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:56:24.190017+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;2bc5a6ff-c4a3-4939-b378-0a41794236f8;{}
+2025-03-31 20:56:24.190258+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;b5ffd96d-65b9-434c-871f-3aff8b93310e;{}
+2025-03-31 20:56:30.593212+00:00;410;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialization
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        return [random.uniform(low, high) for low, high in bounds]
+
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(ind) for ind in population]
+    evals = population_size
+
+    best_idx = fitness.index(min(fitness))
+    best_solution = population[best_idx]
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Mutation
+            [a, b, c] = random.sample([x for x in range(population_size) if x != i], 3)
+            mutant = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+            
+            # Ensure mutant is within bounds
+            mutant = [
+                min(max(mutant[j], bounds[j][0]), bounds[j][1])
+                for j in range(dim)
+            ]
+
+            # Crossover
+            trial = []
+            for j in range(dim):
+                if random.random() < crossover_rate or j == dim - 1:
+                    trial.append(mutant[j])
+                else:
+                    trial.append(population[i][j])
+
+            # Selection
+            trial_fitness = func(trial)
+            evals += 1
+
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Check if this individual is the new best
+                if trial_fitness < best_fitness:
+                    best_solution = trial
+                    best_fitness = trial_fitness
+
+            if evals >= max_evals:
+                break
+
+    return best_fitness
+```";;;284ae9a6-4e50-4574-9894-2c029164fc66;{}
+2025-03-31 20:56:30.858766+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;4f2435b4-5764-4d27-a8d2-5d2dc7c0a8d5;{}
+2025-03-31 20:56:35.167872+00:00;429;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Track best solution
+    best_idx = fitness.index(min(fitness))
+    best_solution = population[best_idx]
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Ensure diverse set of random indices for mutation
+            indices = list(range(population_size))
+            indices.remove(i)
+            a, b, c = random.sample(indices, 3)
+
+            # Mutation
+            mutant = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+            
+            # Ensure mutant is within bounds
+            mutant = [min(max(mutant[j], bounds[j][0]), bounds[j][1]) for j in range(dim)]
+
+            # Crossover
+            trial = [
+                mutant[j] if random.random() < crossover_rate or j == dim - 1 else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Selection
+            trial_fitness = func(trial)
+            evals += 1
+
+            # If the trial solution improves the objective, select it
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Update the best solution found
+                if trial_fitness < best_fitness:
+                    best_solution = trial
+                    best_fitness = trial_fitness
+
+            if evals >= max_evals:
+                break
+
+    return best_fitness
+```";;;b64afc86-0d5d-482c-bc53-709bb970984d;{}
+2025-03-31 20:56:35.432343+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;e55624e6-34bf-45bc-8537-3932b20de31b;{}
+2025-03-31 20:56:39.535168+00:00;443;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Track best solution
+    best_idx = fitness.index(min(fitness))
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        new_population = []
+        for i in range(population_size):
+            # Ensure diverse set of random indices for mutation
+            indices = list(range(population_size))
+            indices.remove(i)
+            a, b, c = random.sample(indices, 3)
+
+            # Mutation
+            mutant = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+            
+            # Ensure mutant is within bounds
+            mutant = [min(max(mutant[j], bounds[j][0]), bounds[j][1]) for j in range(dim)]
+
+            # Crossover
+            trial = [
+                mutant[j] if random.random() < crossover_rate or j == dim - 1 else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Selection
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Keep the better of the trial and current individual
+            if trial_fitness < fitness[i]:
+                new_population.append(trial)
+                fitness[i] = trial_fitness
+
+                # Update the best solution found
+                if trial_fitness < best_fitness:
+                    best_fitness = trial_fitness
+            else:
+                new_population.append(population[i])
+
+            if evals >= max_evals:
+                break    
+
+        # Replace population with new population
+        population = new_population
+
+    return best_fitness
+```";;;c89338fc-9615-45af-94cb-41e02ebe93e2;{}
+2025-03-31 20:56:39.802682+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;b4293b66-9910-494b-bc76-42df247b6e86;{}
+2025-03-31 20:56:44.533892+00:00;413;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Differential Evolution Algorithm Parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        """"""Generate a candidate solution within given bounds.""""""
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population with random candidates
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Identify initial best solution
+    best_idx = fitness.index(min(fitness))
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Mutation: Create a mutant vector
+            indices = [idx for idx in range(population_size) if idx != i]
+            a, b, c = random.sample(indices, 3)
+
+            mutant = [
+                min(max(population[a][j] + mutation_factor * (population[b][j] - population[c][j]), bounds[j][0]), bounds[j][1])
+                for j in range(dim)
+            ]
+
+            # Crossover: Create trial vector from mutant and current candidate
+            trial = [
+                mutant[j] if random.random() < crossover_rate else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Evaluate trial solution
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Replacement: If the trial is better, replace the old solution
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Update the best known solution
+                if trial_fitness < best_fitness:
+                    best_fitness = trial_fitness
+
+            if evals >= max_evals:
+                break    
+
+    return best_fitness
+```";;;cda78ade-0f73-42e1-a532-86d013f5b2ee;{}
+2025-03-31 20:56:44.800200+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;296c6ad4-3f40-4c50-981f-958bfd85afb0;{}
+2025-03-31 20:56:48.496944+00:00;428;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Differential Evolution Algorithm Parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        """"""Generate a candidate solution within given bounds.""""""
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population with random candidates
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Identify initial best solution
+    best_idx = fitness.index(min(fitness))
+    best_solution = population[best_idx]
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Mutation: Create a mutant vector
+            indices = [idx for idx in range(population_size) if idx != i]
+            a, b, c = random.sample(indices, 3)
+
+            mutant = [
+                min(max(population[a][j] + mutation_factor * (population[b][j] - population[c][j]), bounds[j][0]), bounds[j][1])
+                for j in range(dim)
+            ]
+
+            # Crossover: Create trial vector from mutant and current candidate
+            trial = [
+                mutant[j] if random.random() < crossover_rate else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Evaluate trial solution
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Replacement: If the trial is better, replace the old solution
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Update the best known solution
+                if trial_fitness < best_fitness:
+                    best_solution = trial
+                    best_fitness = trial_fitness
+
+            if evals >= max_evals:
+                break    
+
+    return best_fitness
+```";;;539394de-5358-4941-9788-62d5fde2a18e;{}
+2025-03-31 20:56:48.763188+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;3004d779-a4ec-489c-8635-0ece40d0e0d3;{}
+2025-03-31 20:56:55.382848+00:00;462;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Differential Evolution (DE) Inspired Algorithm Parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        """"""Generate a random candidate within the specified bounds.""""""
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population with random candidates
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Track the best solution found
+    best_idx = fitness.index(min(fitness))
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Select three distinct indices for mutation
+            indices = list(range(population_size))
+            indices.remove(i)
+            a, b, c = random.sample(indices, 3)
+
+            # Mutation: Create a mutant vector
+            mutant = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+
+            # Ensure mutant values are within bounds
+            mutant = [
+                min(max(mutant[j], bounds[j][0]), bounds[j][1]) for j in range(dim)
+            ]
+
+            # Crossover: Create a trial vector from mutant and current vector
+            trial = [
+                mutant[j] if random.random() < crossover_rate else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Evaluate the trial vector
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Select the better of the trial or current individual
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Update best solution if the trial is better
+                if trial_fitness < best_fitness:
+                    best_fitness = trial_fitness
+
+            # Exit if the maximum evaluations are reached
+            if evals >= max_evals:
+                break
+
+    return best_fitness
+```
+";;;166d93cf-6369-4cec-9c06-6c77cc352c13;{}
+2025-03-31 20:56:55.651226+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;60188c10-9dcd-4f7c-b722-c08a2bfff911;{}
+2025-03-31 20:57:00.515875+00:00;497;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Differential Evolution (DE) inspired algorithm parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        """"""Generate a random candidate within the specified bounds.""""""
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population with random candidates
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Track the best solution found
+    best_idx = fitness.index(min(fitness))
+    best_solution = population[best_idx]
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        new_population = []
+        for i in range(population_size):
+            # Mutation: Create a mutant vector
+            indices = list(range(population_size))
+            indices.remove(i)
+            a, b, c = random.sample(indices, 3)
+
+            mutant = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+
+            # Ensure mutant values are within bounds
+            mutant = [
+                min(max(mutant[j], bounds[j][0]), bounds[j][1]) for j in range(dim)
+            ]
+
+            # Crossover: Create a trial vector from mutant and current vector
+            trial = [
+                mutant[j] if random.random() < crossover_rate else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Evaluate the trial vector
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Keep the best solution between the current individual and the trial
+            if trial_fitness < fitness[i]:
+                new_population.append(trial)
+                fitness[i] = trial_fitness
+
+                # Update best solution if the trial is better
+                if trial_fitness < best_fitness:
+                    best_solution = trial
+                    best_fitness = trial_fitness
+            else:
+                new_population.append(population[i])
+
+            # Exit if the maximum evaluations are reached
+            if evals >= max_evals:
+                break
+        
+        # Update the population
+        population = new_population
+
+    return best_fitness
+```";;;6aaf5dd5-1321-4acf-9742-4b70f570b1e7;{}
+2025-03-31 20:57:00.787734+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;87735cff-9569-4270-8f72-46a337770c8c;{}
+2025-03-31 20:57:04.849306+00:00;482;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Differential Evolution algorithm parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        """"""Generate a random candidate within the specified bounds.""""""
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize the population with random candidates
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Track the best solution found
+    best_idx = fitness.index(min(fitness))
+    best_solution = population[best_idx]
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Mutation: Create a mutant vector
+            indices = list(range(population_size))
+            indices.remove(i)
+            a, b, c = random.sample(indices, 3)
+
+            mutant = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+
+            # Ensure mutant values are within bounds
+            mutant = [
+                min(max(mutant[j], bounds[j][0]), bounds[j][1]) for j in range(dim)
+            ]
+
+            # Crossover: Create a trial vector from mutant and current vector
+            trial = []
+            for j in range(dim):
+                if random.random() < crossover_rate:  # Perform crossover
+                    trial.append(mutant[j])
+                else:
+                    trial.append(population[i][j])
+
+            # Evaluate the trial vector
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Selection: Keep the better solution between the trial and current individual
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Update the best solution if the trial is better
+                if trial_fitness < best_fitness:
+                    best_solution = trial
+                    best_fitness = trial_fitness
+
+            # Exit if the maximum evaluations are reached
+            if evals >= max_evals:
+                break
+
+    return best_fitness
+```";;;e31d8132-67fb-4d44-b860-5319d3e0fb7e;{}
+2025-03-31 20:57:05.113834+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;0ac12297-6c5f-45e6-aeba-102485a25a09;{}
+2025-03-31 20:57:08.737605+00:00;451;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Differential Evolution (DE) parameters
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        """"""Generate a random candidate within the specified bounds.""""""
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population with random candidates
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Track the best solution found
+    best_idx = fitness.index(min(fitness))
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Mutation: Create a mutant vector
+            indices = [idx for idx in range(population_size) if idx != i]
+            a, b, c = random.sample(indices, 3)
+
+            mutant = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+
+            # Ensure mutant values are within bounds
+            mutant = [min(max(mutant[j], bounds[j][0]), bounds[j][1]) for j in range(dim)]
+
+            # Crossover: Create a trial vector
+            trial = [
+                mutant[j] if random.random() < crossover_rate else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Evaluate the trial vector
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Selection: Replace the current individual if the trial is better
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Update the best solution if the trial is better
+                if trial_fitness < best_fitness:
+                    best_fitness = trial_fitness
+
+            # Exit if maximum evaluations are reached
+            if evals >= max_evals:
+                return best_fitness
+
+    return best_fitness
+```";;;a63f879f-d5ff-40e8-b79e-c936070d8ae1;{}
+2025-03-31 20:57:09.010191+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;49b998d6-a557-456a-8026-5bbc2ea1e436;{}
+2025-03-31 20:57:14.979899+00:00;451;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Parameters for the DE-like algorithm
+    population_size = 20
+    mutation_factor = 0.8
+    crossover_rate = 0.9
+
+    def generate_candidate(bounds):
+        """"""Generate a random candidate solution within the specified bounds.""""""
+        return [random.uniform(low, high) for low, high in bounds]
+
+    # Initialize population with random candidate solutions
+    population = [generate_candidate(bounds) for _ in range(population_size)]
+    fitness = [func(individual) for individual in population]
+    evals = population_size
+
+    # Track the best solution found
+    best_idx = fitness.index(min(fitness))
+    best_fitness = fitness[best_idx]
+
+    while evals < max_evals:
+        for i in range(population_size):
+            # Ensure a diverse set of indices for mutation
+            indices = list(range(population_size))
+            indices.remove(i)
+            a, b, c = random.sample(indices, 3)
+
+            # Mutation creates a donor vector
+            donor = [
+                population[a][j] + mutation_factor * (population[b][j] - population[c][j])
+                for j in range(dim)
+            ]
+
+            # Bound correction for donor
+            donor = [min(max(donor[j], bounds[j][0]), bounds[j][1]) for j in range(dim)]
+
+            # Crossover creates a trial vector
+            trial = [
+                donor[j] if random.random() < crossover_rate else population[i][j]
+                for j in range(dim)
+            ]
+
+            # Evaluate trial vector
+            trial_fitness = func(trial)
+            evals += 1
+
+            # Replacement logic: Keep the better individual
+            if trial_fitness < fitness[i]:
+                population[i] = trial
+                fitness[i] = trial_fitness
+
+                # Update the best solution if trial is superior
+                if trial_fitness < best_fitness:
+                    best_fitness = trial_fitness
+
+            # Early exit if maximum evaluations are reached
+            if evals >= max_evals:
+                return best_fitness
+
+    return best_fitness
+```";;;995507e8-bb86-4181-8718-6ad5b8f32a21;{}

@@ -1,0 +1,17 @@
+\begin{tabular}{lrl}
+\toprule
+Unnamed: 0 & score & ranking \\
+\midrule
+4\_ctxtfull\_sol\_4.py & 90 & 1.0E+00 \\
+5\_ctxt1\_sol\_3.py & 62 & 2.0E+00 \\
+2\_ctxtfull\_sol\_6.py & 34 & 3.0E+00 \\
+1\_ctxt1\_sol\_2.py & 32 & 4.0E+00 \\
+1a\_ctxtfull\_sol\_0.py & 18 & 5.0E+00 \\
+1b\_ctxtfull\_sol\_2.py & 13 & 6.0E+00 \\
+3\_ctxtfull\_sol\_3.py & -13 & 7.0E+00 \\
+4\_ctxt1\_sol\_3.py & -17 & 8.0E+00 \\
+3\_ctxt1\_sol\_0.py & -23 & 9.0E+00 \\
+0\_random\_search\_sol\_0.py & -87 & 1.0E+01 \\
+2\_ctxt1\_sol\_3.py & -109 & 1.1E+01 \\
+\bottomrule
+\end{tabular}

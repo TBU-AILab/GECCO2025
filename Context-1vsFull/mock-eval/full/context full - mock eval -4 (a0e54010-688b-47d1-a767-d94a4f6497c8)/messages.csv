@@ -1,0 +1,722 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:54:45.881844+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;51af9de3-61bc-464c-a31c-5a6c201ee899;{}
+2025-03-31 20:54:45.882299+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;0492c871-8e95-4e60-862c-be81cedc645f;{}
+2025-03-31 20:54:52.192349+00:00;466;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        alpha = random.uniform(0, 1)
+        return [(alpha * p1 + (1 - alpha) * p2) for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_rate, lower, upper):
+        return [x[i] + mutation_rate * random.uniform(-1, 1) if random.random() < mutation_prob else x[i] for i in range(dim)]
+
+    # Initialize population
+    population_size = 10
+    mutation_prob = 0.1
+    mutation_rate = 0.1
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals = len(population)
+
+    # Main loop
+    while evals < max_evals:
+        # Select two parents randomly
+        parent1, parent2 = random.sample(population, 2)
+
+        # Generate an offspring through crossover
+        offspring = crossover(parent1, parent2)
+
+        # Apply mutation
+        offspring = mutate(offspring, mutation_rate, [b[0] for b in bounds], [b[1] for b in bounds])
+
+        # Ensure offspring is within bounds
+        offspring = clip(offspring, [b[0] for b in bounds], [b[1] for b in bounds])
+
+        # Evaluate offspring
+        offspring_fitness = func(offspring)
+        evals += 1
+
+        # Replace the worst individual if offspring is better
+        worst_index = fitnesses.index(max(fitnesses))
+        if offspring_fitness < fitnesses[worst_index]:
+            population[worst_index] = offspring
+            fitnesses[worst_index] = offspring_fitness
+
+    # Find and return the best solution
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;343c1207-dd51-4c77-aeaf-b8cd42c9e334;{}
+2025-03-31 20:54:52.461277+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;9089f14b-2432-4cb6-a52c-1c8b52fbf5f9;{}
+2025-03-31 20:55:00.865543+00:00;501;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        return [p1 if random.random() < 0.5 else p2 for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_rate):
+        return [xi + mutation_rate * random.uniform(-1, 1) for xi in x]
+
+    # Initialize algorithm variables
+    population_size = 20
+    mutation_rate = 0.05
+    tournament_size = 3
+    num_generations = max_evals // population_size
+
+    # Initialize population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals = len(population)
+
+    # Main loop
+    for _ in range(num_generations):
+        new_population = []
+
+        while len(new_population) < population_size and evals < max_evals:
+            # Tournament selection
+            tournament = random.sample(list(zip(population, fitnesses)), tournament_size)
+            parent1 = min(tournament, key=lambda x: x[1])[0]
+            parent2 = min(random.sample(list(zip(population, fitnesses)), tournament_size), key=lambda x: x[1])[0]
+
+            # Crossover
+            offspring = crossover(parent1, parent2)
+
+            # Mutation
+            offspring = mutate(offspring, mutation_rate)
+
+            # Ensure offspring is within bounds
+            offspring = clip(offspring, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate offspring
+            offspring_fitness = func(offspring)
+            evals += 1
+
+            # Add offspring to new population
+            new_population.append((offspring, offspring_fitness))
+
+        # Form the new population for the next generation
+        population, fitnesses = zip(*sorted(new_population + list(zip(population, fitnesses)), key=lambda x: x[1])[:population_size])
+
+    # Return the best found solution's fitness
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;9084b1c0-6c9e-445d-81f8-2b32c42740ce;{}
+2025-03-31 20:55:01.154996+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;14e897e2-287f-4a90-867e-fa4c5ccf1629;{}
+2025-03-31 20:55:12.269937+00:00;585;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        return [(p1 + p2) / 2 for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_strength):
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize algorithm variables
+    population_size = 30
+    mutation_strength = 0.1
+    tournament_size = 3
+    evals = 0
+
+    # Initialize population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += len(population)
+
+    # Main loop
+    while evals < max_evals:
+        new_population = []
+
+        # Create a new generation
+        for _ in range(population_size // 2):
+            # Tournament selection
+            parents = random.sample(list(zip(population, fitnesses)), tournament_size)
+            parent1 = min(parents, key=lambda x: x[1])[0]
+            parent2 = min(random.sample(list(zip(population, fitnesses)), tournament_size), key=lambda x: x[1])[0]
+
+            # Crossover
+            offspring1 = crossover(parent1, parent2)
+            offspring2 = crossover(parent2, parent1)
+
+            # Mutation
+            offspring1 = mutate(offspring1, mutation_strength)
+            offspring2 = mutate(offspring2, mutation_strength)
+
+            # Ensure offspring are within bounds
+            offspring1 = clip(offspring1, [b[0] for b in bounds], [b[1] for b in bounds])
+            offspring2 = clip(offspring2, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate offsprings
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add offsprings to the new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Form the new population for the next generation
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the best found solution's fitness
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;f45f0aa5-fda1-4116-8fb0-f0fe0898ed00;{}
+2025-03-31 20:55:12.545460+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;9ef38a44-ec6a-4e97-87e9-2399c8d6b693;{}
+2025-03-31 20:55:19.219661+00:00;688;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        return [(p1 + p2) / 2 for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_strength):
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize algorithm variables
+    population_size = 30
+    mutation_strength = 0.1
+    tournament_size = 3
+    evals = 0
+
+    # Initialize population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += len(population)
+
+    # Main loop
+    while evals < max_evals:
+        new_population = []
+
+        # Adaptive mutation strength adjustment
+        sorted_fitnesses = sorted(fitnesses)
+        best_fitness = sorted_fitnesses[0]
+        worst_fitness = sorted_fitnesses[-1]
+
+        if worst_fitness - best_fitness > 1e-5:  # Avoid division by zero
+            mutation_strength = 0.1 * (worst_fitness - sorted_fitnesses[population_size // 2]) / (worst_fitness - best_fitness)
+
+        # Create a new generation
+        for _ in range(population_size // 2):
+            # Tournament selection
+            parents = random.sample(list(zip(population, fitnesses)), tournament_size)
+            parent1 = min(parents, key=lambda x: x[1])[0]
+            parent2 = min(random.sample(list(zip(population, fitnesses)), tournament_size), key=lambda x: x[1])[0]
+
+            # Crossover
+            offspring1 = crossover(parent1, parent2)
+            offspring2 = crossover(parent2, parent1)
+
+            # Mutation
+            offspring1 = mutate(offspring1, mutation_strength)
+            offspring2 = mutate(offspring2, mutation_strength)
+
+            # Clip offsprings to bounds
+            offspring1 = clip(offspring1, [b[0] for b in bounds], [b[1] for b in bounds])
+            offspring2 = clip(offspring2, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate offsprings
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add offsprings to the new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Form the new population for the next generation
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the best found solution's fitness
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;cceeea3c-113a-45ed-9f7c-52f9c94a40f4;{}
+2025-03-31 20:55:19.493245+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;6fb4e427-f4e6-4266-9a18-6d003df1066d;{}
+2025-03-31 20:55:27.508554+00:00;643;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        crossover_point = random.randint(1, dim - 1)
+        return parent1[:crossover_point] + parent2[crossover_point:]
+
+    def mutate(x, mutation_strength):
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize algorithm variables
+    population_size = 40
+    initial_mutation_strength = 0.1
+    mutation_decay = 0.99
+    tournament_size = 3
+    evals = 0
+
+    # Initialize population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += len(population)
+
+    # Main loop with adaptive mutation handling
+    while evals < max_evals:
+        new_population = []
+
+        # Adjust mutation strength based on progress
+        mutation_strength = initial_mutation_strength * (mutation_decay ** (evals // population_size))
+
+        # Create a new generation
+        for _ in range(population_size // 2):
+            # Tournament selection
+            tournament_candidates = random.sample(range(population_size), tournament_size)
+            parent1_index = min(tournament_candidates, key=lambda idx: fitnesses[idx])
+            parent2_index = min(random.sample(range(population_size), tournament_size), key=lambda idx: fitnesses[idx])
+
+            parent1 = population[parent1_index]
+            parent2 = population[parent2_index]
+
+            # Crossover
+            offspring1 = crossover(parent1, parent2)
+            offspring2 = crossover(parent2, parent1)
+
+            # Mutation
+            offspring1 = mutate(offspring1, mutation_strength)
+            offspring2 = mutate(offspring2, mutation_strength)
+
+            # Clip offsprings to bounds
+            offspring1 = clip(offspring1, [b[0] for b in bounds], [b[1] for b in bounds])
+            offspring2 = clip(offspring2, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate offsprings
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add offspring to new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Form the new population for the next generation
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the best found solution's fitness
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;b99fdf79-84bc-43dd-bcdf-54b386ab8a9a;{}
+2025-03-31 20:55:27.794386+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;8a093da4-76ab-40ca-be89-39c90c2f8079;{}
+2025-03-31 20:55:35.551707+00:00;633;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        return [(p1 + p2) / 2 for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_strength):
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize algorithm variables
+    population_size = 50
+    initial_mutation_strength = 0.5
+    evals = 0
+
+    # Initialize population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += len(population)
+
+    # Main loop
+    while evals < max_evals:
+        new_population = []
+
+        # Dynamic mutation strength
+        sorted_indices = sorted(range(population_size), key=lambda i: fitnesses[i])
+        best_fitness = fitnesses[sorted_indices[0]]
+        mutation_strength = initial_mutation_strength * (1 - best_fitness/max_evals) if max_evals > 0 else initial_mutation_strength
+
+        # Create a new generation
+        for _ in range(population_size // 2):
+            # Tournament selection
+            parent_indices = random.sample(range(population_size), 3)
+            parent1 = min(parent_indices, key=lambda idx: fitnesses[idx])
+            parent2 = min(random.sample(range(population_size), 3), key=lambda idx: fitnesses[idx])
+
+            # Crossover
+            offspring1 = crossover(population[parent1], population[parent2])
+            offspring2 = crossover(population[parent2], population[parent1])
+
+            # Mutation
+            offspring1 = mutate(offspring1, mutation_strength)
+            offspring2 = mutate(offspring2, mutation_strength)
+
+            # Clip to bounds
+            offspring1 = clip(offspring1, [b[0] for b in bounds], [b[1] for b in bounds])
+            offspring2 = clip(offspring2, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add to new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Form the new population
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the best found solution's fitness
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;bd8e51b0-3a2d-474e-bd93-a766a0007b51;{}
+2025-03-31 20:55:35.828858+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;570b84a4-4b25-43c3-8375-aa8ae8833d86;{}
+2025-03-31 20:55:41.775991+00:00;632;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        alpha = random.uniform(0, 1)
+        return [(alpha * p1 + (1 - alpha) * p2) for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_strength):
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize algorithm variables
+    population_size = 50
+    initial_mutation_strength = 0.1
+    mutation_decay = 0.995
+    evals = 0
+
+    # Generate initial population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += len(population)
+
+    # Main loop
+    while evals < max_evals:
+        new_population = []
+
+        # Adjust mutation strength based on progress
+        mutation_strength = initial_mutation_strength * (mutation_decay ** (evals // population_size))
+
+        # Create a new generation
+        for _ in range(population_size // 2):
+            # Tournament selection
+            indices = random.sample(range(population_size), 5)
+            parent1_idx = min(indices, key=lambda idx: fitnesses[idx])
+            parent2_idx = min(random.sample(range(population_size), 5), key=lambda idx: fitnesses[idx])
+
+            parent1 = population[parent1_idx]
+            parent2 = population[parent2_idx]
+
+            # Crossover
+            offspring1 = crossover(parent1, parent2)
+            offspring2 = crossover(parent2, parent1)
+
+            # Mutation
+            offspring1 = mutate(offspring1, mutation_strength)
+            offspring2 = mutate(offspring2, mutation_strength)
+
+            # Clip to ensure bounds
+            offspring1 = clip(offspring1, [b[0] for b in bounds], [b[1] for b in bounds])
+            offspring2 = clip(offspring2, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add to new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Form the new population
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the best found solution's fitness
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;d89edc79-b419-419e-b721-02c0e08635ee;{}
+2025-03-31 20:55:42.064283+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;3dbf7922-6bf7-4b61-b505-47f24a4ea330;{}
+2025-03-31 20:55:54.753707+00:00;728;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        """"""Ensure x is within the given bounds.""""""
+        return [max(lower[i], min(x[i], upper[i])) for i in range(len(x))]
+
+    def crossover(parent1, parent2):
+        """"""Perform a blend crossover.""""""
+        alpha = random.uniform(0.2, 0.8)
+        return [(alpha * p1 + (1 - alpha) * p2) for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_strength):
+        """"""Mutate the solution with a Gaussian perturbation.""""""
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize variables
+    population_size = 50
+    initial_mutation_strength = 0.2
+    evals = 0
+
+    # Generate initial population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += len(population)
+
+    # Main optimization loop
+    while evals < max_evals:
+        new_population = []
+
+        # Dynamic mutation strength adjustment based on diversity
+        population_avg = sum(fitnesses) / population_size
+        population_std = (sum((f - population_avg) ** 2 for f in fitnesses) / population_size) ** 0.5
+        mutation_strength = initial_mutation_strength * (1 if population_std == 0 else (population_std / (population_avg + 1e-8)))
+
+        # Create a new generation
+        for _ in range(population_size // 2):
+            # Tournament selection
+            tournament_size = 5
+            parents_indices = random.sample(range(population_size), tournament_size)
+            parents = [population[i] for i in parents_indices]
+            parent_fitnesses = [fitnesses[i] for i in parents_indices]
+
+            idx1 = min(range(tournament_size), key=lambda i: parent_fitnesses[i])
+            idx2 = min((i for i in range(tournament_size) if i != idx1), key=lambda i: parent_fitnesses[i])
+
+            parent1 = parents[idx1]
+            parent2 = parents[idx2]
+
+            # Crossover and mutation
+            offspring1 = mutate(clip(crossover(parent1, parent2), [b[0] for b in bounds], [b[1] for b in bounds]), mutation_strength)
+            offspring2 = mutate(clip(crossover(parent2, parent1), [b[0] for b in bounds], [b[1] for b in bounds]), mutation_strength)
+
+            # Evaluate offsprings
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add to new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Form the new combined population and sort based on fitness
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the best found solution's fitness
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;3a7f1ad7-0552-4e87-9020-35334ebec635;{}
+2025-03-31 20:55:55.029942+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;5d07e2d7-18ba-4806-94e7-8365d9645762;{}
+2025-03-31 20:56:02.716815+00:00;697;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        """"""Ensure x is within the provided bounds.""""""
+        return [max(lower[i], min(x[i], upper[i])) for i in range(dim)]
+
+    def crossover(parent1, parent2):
+        """"""Perform arithmetic crossover.""""""
+        return [(p1 + p2) / 2 for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_strength):
+        """"""Apply Gaussian mutation.""""""
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize parameters
+    population_size = 50
+    mutation_strength = 0.1
+    evals = 0
+
+    # Initialize population and evaluate fitnesses
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += len(population)
+
+    # Main optimization loop
+    while evals < max_evals:
+        new_population = []
+
+        # Adjust mutation strength based on population diversity
+        fitness_variance = sum((f - sum(fitnesses) / population_size) ** 2 for f in fitnesses) / population_size
+        mutation_strength = 0.1 + (0.5 - 0.1) * min(1, fitness_variance)
+
+        for _ in range(population_size // 2):
+            # Select parents using tournament selection
+            tournament_size = 5
+            indices = random.sample(range(population_size), tournament_size)
+            fitness_values = [(i, fitnesses[i]) for i in indices]
+            parent1_idx = min(fitness_values, key=lambda x: x[1])[0]
+
+            indices.remove(parent1_idx)
+            parent2_idx = min((i for i in indices), key=lambda i: fitnesses[i])
+
+            parent1 = population[parent1_idx]
+            parent2 = population[parent2_idx]
+
+            # Create offspring using crossover and mutation
+            offspring1 = mutate(crossover(parent1, parent2), mutation_strength)
+            offspring2 = mutate(crossover(parent2, parent1), mutation_strength)
+
+            # Clip the offspring if they go out of bounds
+            offspring1 = clip(offspring1, [b[0] for b in bounds], [b[1] for b in bounds])
+            offspring2 = clip(offspring2, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate offspring
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add offspring to the new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Replace the old population with the new one, keeping the best individuals
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the fitness of the best found solution
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;9e859a5e-d6f8-443a-8870-050a4250c433;{}
+2025-03-31 20:56:02.994538+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;d33426a2-94d1-4ed4-b3d2-9dec230138aa;{}
+2025-03-31 20:56:13.402760+00:00;656;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    def clip(x, lower, upper):
+        """"""Ensures each element in x is within the specified bounds.""""""
+        return [max(lower[i], min(x[i], upper[i])) for i in range(dim)]
+
+    def crossover(parent1, parent2):
+        """"""Performs uniform crossover.""""""
+        return [p1 if random.random() < 0.5 else p2 for p1, p2 in zip(parent1, parent2)]
+
+    def mutate(x, mutation_strength):
+        """"""Applies Gaussian mutation.""""""
+        return [xi + mutation_strength * random.gauss(0, 1) for xi in x]
+
+    # Initialize algorithm parameters
+    population_size = 50
+    initial_mutation_strength = 0.5
+    evals = 0
+
+    # Create initial population
+    population = [[random.uniform(bounds[i][0], bounds[i][1]) for i in range(dim)] for _ in range(population_size)]
+    fitnesses = [func(ind) for ind in population]
+    evals += population_size
+
+    # Main optimization loop
+    while evals < max_evals:
+        new_population = []
+
+        # Adjust mutation strength with respect to progress
+        sorted_fitnesses = sorted(fitnesses)
+        best_fitness = sorted_fitnesses[0]
+        diversity = max(sorted_fitnesses) - best_fitness
+        mutation_strength = initial_mutation_strength * (1 + diversity / (abs(best_fitness) + 1e-8))
+
+        for _ in range(population_size // 2):
+            # Tournament selection
+            candidates = random.sample(range(population_size), 3)
+            best_candidates = sorted(candidates, key=lambda idx: fitnesses[idx])
+            parent1_idx = best_candidates[0]
+            parent2_idx = best_candidates[1]
+
+            parent1 = population[parent1_idx]
+            parent2 = population[parent2_idx]
+
+            # Crossover and mutation
+            offspring1 = mutate(crossover(parent1, parent2), mutation_strength)
+            offspring2 = mutate(crossover(parent2, parent1), mutation_strength)
+
+            # Clip offspring
+            offspring1 = clip(offspring1, [b[0] for b in bounds], [b[1] for b in bounds])
+            offspring2 = clip(offspring2, [b[0] for b in bounds], [b[1] for b in bounds])
+
+            # Evaluate offspring
+            fitness1 = func(offspring1)
+            fitness2 = func(offspring2)
+            evals += 2
+
+            # Add offspring to the new population
+            new_population.extend([(offspring1, fitness1), (offspring2, fitness2)])
+
+        # Form the new combined population
+        combined_population = new_population + list(zip(population, fitnesses))
+        combined_population.sort(key=lambda x: x[1])
+        population, fitnesses = zip(*combined_population[:population_size])
+
+    # Return the best solution's fitness found
+    best_index = fitnesses.index(min(fitnesses))
+    return fitnesses[best_index]
+```";;;20d1c9b3-6005-4836-b117-fe4febd4c1f9;{}

@@ -1,0 +1,973 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:56:14.214061+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;3f4253a1-071f-4b11-bc87-4340b12777b1;{}
+2025-03-31 20:56:14.214269+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;391f2222-1ff3-4b96-9c33-ee22710ebcde;{}
+2025-03-31 20:56:21.441937+00:00;434;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    best = float('inf')
+    best_params = None
+    
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0])
+    
+    def mutation(individual, bounds, mutation_rate=0.1):
+        mutated = []
+        for d in range(len(individual)):
+            if random.random() < mutation_rate:
+                mutated.append(random.uniform(bounds[d][0], bounds[d][1]))
+            else:
+                mutated.append(individual[d])
+        return mutated
+    
+    def recombination(parent1, parent2):
+        child = []
+        for d in range(len(parent1)):
+            if random.random() > 0.5:
+                child.append(parent1[d])
+            else:
+                child.append(parent2[d])
+        return child
+    
+    eval_count = 0
+    population_size = 20
+    population = initialize_population(population_size, dim, bounds)
+    
+    while eval_count < max_evals:
+        evaluated_population = evaluate_population(population)
+        if evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+        
+        next_generation = []
+        
+        for _ in range(population_size // 2):
+            parent1, parent2 = random.sample(evaluated_population[:10], 2)
+            child1 = recombination(parent1[1], parent2[1])
+            child2 = recombination(parent2[1], parent1[1])
+            child1 = mutation(child1, bounds)
+            child2 = mutation(child2, bounds)
+            
+            next_generation.extend([child1, child2])
+
+        population = next_generation
+    
+    return best
+```";;;0205e1d0-a517-42f6-bba2-348e97016c7d;{}
+2025-03-31 20:56:21.684607+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;3abbb5f1-abae-42c7-9a9e-956c5fb60416;{}
+2025-03-31 20:56:33.102253+00:00;678;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the best solution to infinity
+    best = float('inf')
+    best_params = None
+
+    # Initialize a counter for cost function evaluations
+    eval_count = 0
+
+    # Define population and mutation settings
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        population = []
+        for _ in range(size):
+            individual = [random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)]
+            population.append(individual)
+        return population
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count >= max_evals:
+                break
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(population, fitness, size):
+        best_individual = None
+        best_fitness = float('inf')
+        for _ in range(size):
+            index = random.randint(0, len(population) - 1)
+            if fitness[index][0] < best_fitness:
+                best_fitness = fitness[index][0]
+                best_individual = fitness[index][1]
+        return best_individual
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+
+        # Update the best solution
+        if evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size:
+            # Select parents
+            parent1 = tournament_selection(population, evaluated_population, tournament_size)
+            parent2 = tournament_selection(population, evaluated_population, tournament_size)
+
+            # Recombine parents to create offspring
+            child1 = recombine(parent1, parent2)
+            child2 = recombine(parent2, parent1)
+
+            # Apply mutation to offspring
+            child1 = mutate(child1, bounds, mutation_rate)
+            child2 = mutate(child2, bounds, mutation_rate)
+
+            # Add to the next generation
+            next_generation.extend([child1, child2])
+
+        # Update population
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;14dc7c8e-34fd-438e-8f05-ffa55f8b155f;{}
+2025-03-31 20:56:33.260456+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception list index out of range on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception list index out of range on function = InvertedSphere.
+";;;0f005efc-bdc2-4afb-baa2-fcf710a43fb3;{}
+2025-03-31 20:56:38.578196+00:00;684;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the best solution to infinity
+    best = float('inf')
+    best_params = None
+
+    # Initialize a counter for cost function evaluations
+    eval_count = 0
+
+    # Define population and mutation settings
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        population = []
+        for _ in range(size):
+            individual = [random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)]
+            population.append(individual)
+        return population
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count >= max_evals:
+                break
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        best_individual = None
+        best_fitness = float('inf')
+        for _ in range(size):
+            index = random.randint(0, len(evaluated_population) - 1)
+            if evaluated_population[index][0] < best_fitness:
+                best_fitness = evaluated_population[index][0]
+                best_individual = evaluated_population[index][1]
+        return best_individual
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+
+        # Update the best solution
+        if evaluated_population and evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size:
+            # Select parents
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine parents to create offspring
+            child1 = recombine(parent1, parent2)
+            child2 = recombine(parent2, parent1)
+
+            # Apply mutation to offspring
+            child1 = mutate(child1, bounds, mutation_rate)
+            child2 = mutate(child2, bounds, mutation_rate)
+
+            # Add to the next generation
+            next_generation.extend([child1, child2])
+
+        # Update population
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;8a723459-32aa-4a99-8f28-b0b47c21f956;{}
+2025-03-31 20:56:38.819552+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;ecb58af2-fa6e-4aba-a1d4-e902f5021e84;{}
+2025-03-31 20:56:47.184741+00:00;705;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the best solution to infinity
+    best = float('inf')
+    best_params = None
+
+    # Initialize a counter for cost function evaluations
+    eval_count = 0
+
+    # Define population and mutation settings
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        population = []
+        for _ in range(size):
+            individual = [random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)]
+            population.append(individual)
+        return population
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count >= max_evals:
+                return fitness
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        best_individual = None
+        best_fitness = float('inf')
+        for _ in range(size):
+            index = random.randint(0, len(evaluated_population) - 1)
+            if evaluated_population[index][0] < best_fitness:
+                best_fitness = evaluated_population[index][0]
+                best_individual = evaluated_population[index][1]
+        return best_individual
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population, ensuring evaluations have not been exceeded
+        evaluated_population = evaluate_population(population)
+        if not evaluated_population:
+            break
+
+        # Update the best solution
+        if evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size and eval_count < max_evals:
+            # Select parents
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine parents to create offspring
+            child1 = recombine(parent1, parent2)
+            child2 = recombine(parent2, parent1)
+
+            # Apply mutation to offspring
+            child1 = mutate(child1, bounds, mutation_rate)
+            child2 = mutate(child2, bounds, mutation_rate)
+
+            # Add to the next generation
+            next_generation.extend([child1, child2])
+
+        # Update population
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;fbb3a625-58f1-4e8e-ab48-fb3976b1cf92;{}
+2025-03-31 20:56:47.427587+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;80ebf3a7-0fcc-4ffb-a8dc-1a9232746f2e;{}
+2025-03-31 20:56:52.497893+00:00;641;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the best solution to infinity
+    best = float('inf')
+    best_params = None
+
+    # Initialize a counter for cost function evaluations
+    eval_count = 0
+
+    # Define population and mutation settings
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count >= max_evals:
+                return fitness
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        selected = random.sample(evaluated_population, min(size, len(evaluated_population)))
+        return min(selected, key=lambda x: x[0])[1]
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population, ensuring evaluations have not been exceeded
+        evaluated_population = evaluate_population(population)
+        if not evaluated_population:
+            break
+
+        # Update the best solution
+        if evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size and eval_count < max_evals:
+            # Select parents
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine parents to create offspring
+            child1 = recombine(parent1, parent2)
+            child2 = recombine(parent2, parent1)
+
+            # Apply mutation to offspring
+            child1 = mutate(child1, bounds, mutation_rate)
+            child2 = mutate(child2, bounds, mutation_rate)
+
+            # Add to the next generation
+            next_generation.extend([child1, child2])
+
+        # Update population
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;f0fe8949-6f99-4eff-84db-d8e826c4bb91;{}
+2025-03-31 20:56:52.740359+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;b65505bb-c520-4cf3-a668-44d008567c25;{}
+2025-03-31 20:57:01.462257+00:00;654;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the best solution to infinity
+    best = float('inf')
+    best_params = None
+
+    # Initialize a counter for cost function evaluations
+    eval_count = 0
+
+    # Define population and mutation settings
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count >= max_evals:
+                break
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0]) if fitness else []
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        selected = random.sample(evaluated_population, min(size, len(evaluated_population)))
+        return min(selected, key=lambda x: x[0])[1]
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+
+        # Break the loop if the evaluation limit is reached
+        if not evaluated_population or eval_count >= max_evals:
+            break
+
+        # Update the best solution
+        if evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size:
+            # Select parents
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine parents to create offspring
+            child1 = recombine(parent1, parent2)
+            child2 = recombine(parent2, parent1)
+
+            # Apply mutation to offspring
+            child1 = mutate(child1, bounds, mutation_rate)
+            child2 = mutate(child2, bounds, mutation_rate)
+
+            # Add to the next generation
+            next_generation.extend([child1, child2])
+
+        # Update population, ensuring the size constraint
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;cf6ca166-eacc-4159-a016-0063389a1086;{}
+2025-03-31 20:57:01.709066+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;becee0ef-e685-4415-bcce-b144c7c1661c;{}
+2025-03-31 20:57:08.140425+00:00;624;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the best solution to infinity
+    best = float('inf')
+    best_params = None
+
+    # Initialize a counter for cost function evaluations
+    eval_count = 0
+
+    # Population settings
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count < max_evals:
+                fitness_value = func(individual)
+                eval_count += 1
+                fitness.append((fitness_value, individual))
+            else:
+                break
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        selected = random.sample(evaluated_population, size)
+        return min(selected, key=lambda x: x[0])[1]
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+
+        # Break if no evaluations were possible
+        if not evaluated_population:
+            break
+
+        # Update the best solution found
+        if evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size and eval_count < max_evals:
+            # Select parents
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine and mutate to create offspring
+            child1 = mutate(recombine(parent1, parent2), bounds, mutation_rate)
+            child2 = mutate(recombine(parent2, parent1), bounds, mutation_rate)
+
+            # Add offspring to the next generation
+            next_generation.extend([child1, child2])
+
+        # Update population to next generation truncated to population size
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;f68681d6-3d9b-4693-a099-5aa273b2a1c4;{}
+2025-03-31 20:57:08.385826+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;7bd179a3-70e7-484c-89d2-49b092b15676;{}
+2025-03-31 20:57:13.622870+00:00;622;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the best solution to infinity
+    best = float('inf')
+
+    # Initialize a counter for cost function evaluations
+    eval_count = 0
+
+    # Population parameters
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count >= max_evals:
+                break
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        selected = random.sample(evaluated_population, min(size, len(evaluated_population)))
+        return min(selected, key=lambda x: x[0])[1]
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+
+        # If no more evaluations can be performed, break
+        if not evaluated_population:
+            break
+
+        # Update the best solution found
+        current_best = evaluated_population[0][0]
+        if current_best < best:
+            best = current_best
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size:
+            # Select parents using tournament selection
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine and mutate to create offspring
+            offspring1 = mutate(recombine(parent1, parent2), bounds, mutation_rate)
+            offspring2 = mutate(recombine(parent2, parent1), bounds, mutation_rate)
+
+            # Add offspring to the next generation
+            next_generation.extend([offspring1, offspring2])
+
+        # Truncate to population size and update population
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;245f4bcf-ca6c-4edf-aab8-b4612f385a61;{}
+2025-03-31 20:57:13.869201+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;695b0339-a731-48ac-b860-194d2035f027;{}
+2025-03-31 20:57:22.753180+00:00;615;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Population parameters
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Initialize the best solution to infinity
+    best = float('inf')
+    best_params = None
+    eval_count = 0
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count >= max_evals:
+                break
+            fitness_value = func(individual)
+            eval_count += 1
+            fitness.append((fitness_value, individual))
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [parent1[d] if random.random() > 0.5 else parent2[d] for d in range(len(parent1))]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        selected = random.sample(evaluated_population, min(size, len(evaluated_population)))
+        return min(selected, key=lambda x: x[0])[1]
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+
+        # Break if we can't evaluate further
+        if not evaluated_population:
+            break
+
+        # Update the best solution found
+        if evaluated_population[0][0] < best:
+            best, best_params = evaluated_population[0]
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size:
+            # Select parents using tournament selection
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine and mutate to create offspring
+            offspring1 = mutate(recombine(parent1, parent2), bounds, mutation_rate)
+            offspring2 = mutate(recombine(parent2, parent1), bounds, mutation_rate)
+
+            # Add offspring to the next generation
+            next_generation.extend([offspring1, offspring2])
+
+        # Trim the generation if it exceeds the population size
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;50c15cc9-498d-431f-8365-8dcfea6a98d9;{}
+2025-03-31 20:57:22.995158+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;d8cd6f25-e9c6-41e3-880e-2162e1d9226d;{}
+2025-03-31 20:57:27.991601+00:00;622;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Population parameters
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Initialize the best solution to infinity
+    best = float('inf')
+    eval_count = 0
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count < max_evals:
+                fitness_value = func(individual)
+                eval_count += 1
+                fitness.append((fitness_value, individual))
+            else:
+                break
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [(p1 + p2) / 2 if random.random() > 0.5 else p1 for p1, p2 in zip(parent1, parent2)]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        selected = random.sample(evaluated_population, min(size, len(evaluated_population)))
+        return min(selected, key=lambda x: x[0])[1]
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+        
+        # Check if the evaluations were exhausted
+        if not evaluated_population:
+            break
+
+        # Update the best solution found
+        current_best = evaluated_population[0][0]
+        if current_best < best:
+            best = current_best
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size:
+            # Select parents using tournament selection
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine and mutate to create offspring
+            offspring1 = mutate(recombine(parent1, parent2), bounds, mutation_rate)
+            offspring2 = mutate(recombine(parent2, parent1), bounds, mutation_rate)
+
+            # Add offspring to the next generation
+            next_generation.extend([offspring1, offspring2])
+
+        # Trim the generation if it exceeds the population size
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;16bec86a-9cb1-4580-91c9-58f8b785f0e9;{}
+2025-03-31 20:57:28.238506+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;9ca8161d-9e38-4a45-9c6d-7210df919bbe;{}
+2025-03-31 20:57:32.583870+00:00;615;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Population parameters
+    population_size = 20
+    mutation_rate = 0.1
+    tournament_size = 3
+
+    # Initialize the best solution to infinity
+    best = float('inf')
+    eval_count = 0
+
+    # Function to initialize the population
+    def initialize_population(size, dim, bounds):
+        return [[random.uniform(bounds[d][0], bounds[d][1]) for d in range(dim)] for _ in range(size)]
+
+    # Function to evaluate a population
+    def evaluate_population(population):
+        nonlocal eval_count
+        fitness = []
+        for individual in population:
+            if eval_count < max_evals:
+                fitness_value = func(individual)
+                eval_count += 1
+                fitness.append((fitness_value, individual))
+            else:
+                break
+        return sorted(fitness, key=lambda x: x[0])
+
+    # Function to perform mutation
+    def mutate(individual, bounds, rate):
+        return [random.uniform(bounds[d][0], bounds[d][1]) if random.random() < rate else individual[d]
+                for d in range(len(individual))]
+
+    # Function for recombination (crossover)
+    def recombine(parent1, parent2):
+        return [p1 if random.random() > 0.5 else p2 for p1, p2 in zip(parent1, parent2)]
+
+    # Function for tournament selection
+    def tournament_selection(evaluated_population, size):
+        selected = random.sample(evaluated_population, min(size, len(evaluated_population)))
+        return min(selected, key=lambda x: x[0])[1]
+
+    # Initialize population
+    population = initialize_population(population_size, dim, bounds)
+
+    # Main optimization loop
+    while eval_count < max_evals:
+        # Evaluate current population
+        evaluated_population = evaluate_population(population)
+        
+        # Check if the evaluations were exhausted
+        if not evaluated_population:
+            break
+
+        # Update the best solution found
+        current_best = evaluated_population[0][0]
+        if current_best < best:
+            best = current_best
+
+        # Generate the next generation
+        next_generation = []
+        while len(next_generation) < population_size:
+            # Select parents using tournament selection
+            parent1 = tournament_selection(evaluated_population, tournament_size)
+            parent2 = tournament_selection(evaluated_population, tournament_size)
+
+            # Recombine and mutate to create offspring
+            offspring1 = mutate(recombine(parent1, parent2), bounds, mutation_rate)
+            offspring2 = mutate(recombine(parent2, parent1), bounds, mutation_rate)
+
+            # Add offspring to the next generation
+            next_generation.extend([offspring1, offspring2])
+
+        # Trim the generation if it exceeds the population size
+        population = next_generation[:population_size]
+
+    # Return the fitness of the best found solution
+    return best
+```";;;bd36833d-6a0e-423f-a180-995ebf4adf00;{}

@@ -1,0 +1,428 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-21 16:37:09.090346+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when self.func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;3869ef74-9117-48c8-b530-f4afd3452b1d;{}
+2025-03-21 16:37:09.090546+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;1bcfa99b-fe2b-4410-9ec0-bc56c43d8e6a;{}
+2025-03-21 16:37:13.588188+00:00;352;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize parameters
+    evals = 0
+    best = float('inf')
+    pop_size = 10
+    mutation_rate = 0.1
+
+    # Randomly initialize a population within the bounds
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+    fitness = [float('inf')] * pop_size
+
+    for i in range(pop_size):
+        fitness[i] = func(population[i])
+        evals += 1
+        if fitness[i] < best:
+            best = fitness[i]
+
+    while evals < max_evals:
+        # Select parent using tournament selection
+        parent_index = min(range(pop_size), key=lambda i: fitness[i])
+        parent = population[parent_index]
+
+        # Mutation to create a new solution
+        child = parent[:]  # Copy the parent's solution
+        for j in range(dim):
+            if random.random() < mutation_rate:
+                child[j] = random.uniform(bounds[j][0], bounds[j][1])
+
+        # Evaluate the new child
+        child_fitness = func(child)
+        evals += 1
+        if child_fitness < best:
+            best = child_fitness
+
+        # Replace the worst individual in the population if the child is better
+        worst_index = max(range(pop_size), key=lambda i: fitness[i])
+        if child_fitness < fitness[worst_index]:
+            population[worst_index] = child
+            fitness[worst_index] = child_fitness
+
+    # Return the fitness of the best-found solution
+    return best
+```";;;8769b4d6-8e9a-4b58-9ebd-9efe1eefe8a9;{}
+2025-03-22 02:39:01.308082+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 144.27753961593962
+mean result of function 2 dim 10 = 18.310351320084358
+mean result of function 3 dim 10 = 0.06381026077445674
+mean result of function 4 dim 10 = 33.46525868574519
+mean result of function 5 dim 10 = 89.3417477767087
+mean result of function 6 dim 10 = 1651.5529534161917
+mean result of function 7 dim 10 = 13.346935052366028
+mean result of function 8 dim 10 = 16.270050634173614
+mean result of function 9 dim 10 = 239.1720364952503
+mean result of function 10 dim 10 = 99.68912414360331
+mean result of function 11 dim 10 = 203.17576497499556
+mean result of function 12 dim 10 = 165.19426149775848
+
+and the statistic result is:
+not enough data
+";;;911413dd-39d7-4b30-b3e4-2b4735174808;{}
+2025-03-22 02:39:06.201447+00:00;460;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize parameters
+    evals = 0
+    best = float('inf')
+    pop_size = 20
+    mutation_rate = 0.05
+    crossover_rate = 0.7
+
+    # Randomly initialize a population within the bounds
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+    fitness = [float('inf')] * pop_size
+
+    for i in range(pop_size):
+        fitness[i] = func(population[i])
+        evals += 1
+        if fitness[i] < best:
+            best = fitness[i]
+
+    while evals < max_evals:
+        # Select parents using tournament selection
+        tournament_size = 3
+        parent1_index = min(random.sample(range(pop_size), tournament_size), key=lambda i: fitness[i])
+        parent2_index = min(random.sample(range(pop_size), tournament_size), key=lambda i: fitness[i])
+        
+        parent1, parent2 = population[parent1_index], population[parent2_index]
+
+        # Crossover to create a new child
+        child = parent1[:]
+        if random.random() < crossover_rate:
+            crossover_point = random.randint(1, dim - 1)  # Ensure at least one gene is exchanged
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+
+        # Mutation to introduce variability
+        for j in range(dim):
+            if random.random() < mutation_rate:
+                child[j] = random.uniform(bounds[j][0], bounds[j][1])
+
+        # Evaluate the new child
+        child_fitness = func(child)
+        evals += 1
+        if child_fitness < best:
+            best = child_fitness
+
+        # Replace the worst individual in the population if the child is better
+        worst_index = max(range(pop_size), key=lambda i: fitness[i])
+        if child_fitness < fitness[worst_index]:
+            population[worst_index] = child
+            fitness[worst_index] = child_fitness
+
+    # Return the fitness of the best-found solution
+    return best
+```";;;987e1d7f-3492-4363-abfe-c8aa8531a95e;{}
+2025-03-22 12:54:04.149854+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 635.5033016485221
+mean result of function 2 dim 10 = 21.68757383260272
+mean result of function 3 dim 10 = 0.08236813885336156
+mean result of function 4 dim 10 = 31.738320546932535
+mean result of function 5 dim 10 = 224.35731766870123
+mean result of function 6 dim 10 = 1938.7896294331467
+mean result of function 7 dim 10 = 12.544166420496179
+mean result of function 8 dim 10 = 18.658765801752768
+mean result of function 9 dim 10 = 235.09791566058072
+mean result of function 10 dim 10 = 121.81013364567723
+mean result of function 11 dim 10 = 221.85941361275366
+mean result of function 12 dim 10 = 167.064423295893
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The best-so-far solution is significantly better on function 1 dim 10 with p-value=2.402528137965069e-06
+There is no significant difference between current and best-so-far solutions on function 10 dim 10 with p-value=0.32917742467820843
+There is no significant difference between current and best-so-far solutions on function 11 dim 10 with p-value=0.6789005364668961
+The best-so-far solution is significantly better on function 12 dim 10 with p-value=0.005697734194065506
+There is no significant difference between current and best-so-far solutions on function 2 dim 10 with p-value=0.7562013389413471
+There is no significant difference between current and best-so-far solutions on function 3 dim 10 with p-value=0.16016393690179076
+There is no significant difference between current and best-so-far solutions on function 4 dim 10 with p-value=1.0
+The best-so-far solution is significantly better on function 5 dim 10 with p-value=0.021089946407876443
+There is no significant difference between current and best-so-far solutions on function 6 dim 10 with p-value=0.564214705145786
+There is no significant difference between current and best-so-far solutions on function 7 dim 10 with p-value=0.8015549378818438
+There is no significant difference between current and best-so-far solutions on function 8 dim 10 with p-value=0.14328738474412253
+The best-so-far solution is significantly better on function 9 dim 10 with p-value=0.03325779663050038
+
+";;;b1f4886c-1f9e-44a0-ae9a-fa00b97eff43;{}
+2025-03-22 12:54:07.799673+00:00;466;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize parameters
+    evals = 0
+    best = float('inf')
+    pop_size = 30
+    mutation_rate = 0.1
+    crossover_rate = 0.8
+
+    def evaluate_population(population):
+        nonlocal evals, best
+        fitness = []
+        for individual in population:
+            f = func(individual)
+            evals += 1
+            fitness.append(f)
+            if f < best:
+                best = f
+        return fitness
+
+    # Randomly initialize a population within the bounds
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+    fitness = evaluate_population(population)
+
+    while evals < max_evals:
+        # Select parents using tournament selection
+        tournament_size = 5
+        parent1_index = min(random.sample(range(pop_size), tournament_size), key=lambda i: fitness[i])
+        parent2_index = min(random.sample(range(pop_size), tournament_size), key=lambda i: fitness[i])
+        
+        parent1, parent2 = population[parent1_index], population[parent2_index]
+
+        # Crossover to create a new child
+        child = parent1[:]
+        if random.random() < crossover_rate:
+            crossover_point = random.randint(1, dim - 1)
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+
+        # Mutation to introduce variability
+        for j in range(dim):
+            if random.random() < mutation_rate:
+                child[j] = random.uniform(bounds[j][0], bounds[j][1])
+
+        # Evaluate the new child
+        child_fitness = func(child)
+        evals += 1
+        if child_fitness < best:
+            best = child_fitness
+
+        # Replace the worst individual in the population if the child is better
+        worst_index = max(range(pop_size), key=lambda i: fitness[i])
+        if child_fitness < fitness[worst_index]:
+            population[worst_index] = child
+            fitness[worst_index] = child_fitness
+
+    # Return the fitness of the best-found solution
+    return best
+```";;;19e2eac3-4608-4cc9-8954-1f3c2c7683d1;{}
+2025-03-22 23:15:36.283690+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 178.28866428439548
+mean result of function 2 dim 10 = 13.582696401340053
+mean result of function 3 dim 10 = 0.05742056347202888
+mean result of function 4 dim 10 = 31.27952346160545
+mean result of function 5 dim 10 = 60.7794444558252
+mean result of function 6 dim 10 = 2449.2127361658204
+mean result of function 7 dim 10 = 9.975273179970543
+mean result of function 8 dim 10 = 17.5019172242425
+mean result of function 9 dim 10 = 229.35834396516518
+mean result of function 10 dim 10 = 134.74791871924972
+mean result of function 11 dim 10 = 232.5066948803592
+mean result of function 12 dim 10 = 165.92109011427496
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+There is no significant difference between current and best-so-far solutions on function 1 dim 10 with p-value=0.3593342645393439
+There is no significant difference between current and best-so-far solutions on function 10 dim 10 with p-value=0.09775105544859913
+There is no significant difference between current and best-so-far solutions on function 11 dim 10 with p-value=0.4420179139756857
+There is no significant difference between current and best-so-far solutions on function 12 dim 10 with p-value=0.20887092391866158
+There is no significant difference between current and best-so-far solutions on function 2 dim 10 with p-value=0.3365583763946506
+There is no significant difference between current and best-so-far solutions on function 3 dim 10 with p-value=0.30766901370797484
+There is no significant difference between current and best-so-far solutions on function 4 dim 10 with p-value=0.5742467278315231
+There is no significant difference between current and best-so-far solutions on function 5 dim 10 with p-value=0.1205749922602295
+There is no significant difference between current and best-so-far solutions on function 6 dim 10 with p-value=0.10078263179832223
+There is no significant difference between current and best-so-far solutions on function 7 dim 10 with p-value=0.32917742467820843
+There is no significant difference between current and best-so-far solutions on function 8 dim 10 with p-value=0.7338250612126413
+There is no significant difference between current and best-so-far solutions on function 9 dim 10 with p-value=0.48713803171001935
+
+";;;da25cd85-6dc8-4efe-88ff-f6a974f5587e;{}
+2025-03-22 23:15:41.980161+00:00;473;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize parameters
+    evals = 0
+    best = float('inf')
+    pop_size = 50
+    mutation_rate = 0.15
+    crossover_rate = 0.9
+    elite_ratio = 0.1
+
+    def evaluate_population(population):
+        nonlocal evals, best
+        fitness = []
+        for individual in population:
+            f = func(individual)
+            evals += 1
+            fitness.append(f)
+            if f < best:
+                best = f
+        return fitness
+
+    # Randomly initialize a population within the bounds
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+    fitness = evaluate_population(population)
+
+    while evals < max_evals:
+        # Sort population based on fitness
+        sorted_indices = sorted(range(pop_size), key=lambda i: fitness[i])
+        population = [population[i] for i in sorted_indices]
+        fitness = [fitness[i] for i in sorted_indices]
+
+        # Elitism: Retain the top elite_ratio% of the population
+        elite_count = int(pop_size * elite_ratio)
+        new_population = population[:elite_count]
+
+        # Generate new solutions using crossover and mutation
+        while len(new_population) < pop_size:
+            # Select parents using tournament selection
+            tournament_size = 5
+            parent_indices = random.sample(range(elite_count), 2)
+            parent1 = population[parent_indices[0]]
+            parent2 = population[parent_indices[1]]
+
+            # Crossover to create a new child
+            child = parent1[:]
+            if random.random() < crossover_rate:
+                crossover_point = random.randint(1, dim - 1)
+                child = parent1[:crossover_point] + parent2[crossover_point:]
+
+            # Mutation to introduce variability
+            for j in range(dim):
+                if random.random() < mutation_rate:
+                    child[j] = random.uniform(bounds[j][0], bounds[j][1])
+
+            new_population.append(child)
+
+        # Evaluate the new population
+        fitness = evaluate_population(new_population)
+
+    # Return the fitness of the best-found solution
+    return best
+```";;;a3eafbf9-a7a2-488b-90cf-b3f31e59c001;{}
+2025-03-23 09:21:19.334879+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+The mean results of the tested functions are:
+mean result of function 1 dim 10 = 6744.090744472433
+mean result of function 2 dim 10 = 202.36035399010996
+mean result of function 3 dim 10 = 36.210457764008645
+mean result of function 4 dim 10 = 56.128703847749414
+mean result of function 5 dim 10 = 678.3720084065006
+mean result of function 6 dim 10 = 6962024.231434215
+mean result of function 7 dim 10 = 73.75273189157954
+mean result of function 8 dim 10 = 36.353743892556295
+mean result of function 9 dim 10 = 340.52270282470147
+mean result of function 10 dim 10 = 120.53849528362085
+mean result of function 11 dim 10 = 296.33533441329485
+mean result of function 12 dim 10 = 204.9920394329511
+
+and the statistic result is:
+The result of the Wilcoxon rank sum test (alpha=0.05) between current and best-so-far solution is the following:
+The best-so-far solution is significantly better on function 1 dim 10 with p-value=2.8719490663203234e-11
+There is no significant difference between current and best-so-far solutions on function 10 dim 10 with p-value=0.07604147583024336
+There is no significant difference between current and best-so-far solutions on function 11 dim 10 with p-value=0.06899014012996332
+The best-so-far solution is significantly better on function 12 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 2 dim 10 with p-value=4.285539284060643e-11
+The best-so-far solution is significantly better on function 3 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 4 dim 10 with p-value=3.056128099816394e-09
+The best-so-far solution is significantly better on function 5 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 6 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 7 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 8 dim 10 with p-value=2.8719490663203234e-11
+The best-so-far solution is significantly better on function 9 dim 10 with p-value=2.8719490663203234e-11
+
+";;;0af465a6-fd53-4bae-9273-27a359678038;{}
+2025-03-23 09:21:23.010460+00:00;485;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize parameters
+    evals = 0
+    best = float('inf')
+    pop_size = 100
+    mutation_rate = 0.2
+    crossover_rate = 0.9
+    elite_ratio = 0.2
+
+    def evaluate_population(population):
+        nonlocal evals, best
+        fitness = []
+        for individual in population:
+            f = func(individual)
+            evals += 1
+            fitness.append(f)
+            if f < best:
+                best = f
+        return fitness
+
+    # Randomly initialize a population within the bounds
+    population = [[random.uniform(low, high) for low, high in bounds] for _ in range(pop_size)]
+    fitness = evaluate_population(population)
+
+    while evals < max_evals:
+        # Sort population based on fitness
+        sorted_indices = sorted(range(pop_size), key=lambda i: fitness[i])
+        population = [population[i] for i in sorted_indices]
+        fitness = [fitness[i] for i in sorted_indices]
+
+        # Elitism: Retain the top elite_ratio% of the population
+        elite_count = int(pop_size * elite_ratio)
+        new_population = population[:elite_count]
+
+        # Generate new solutions using crossover and mutation
+        while len(new_population) < pop_size:
+            # Select parents using tournament selection
+            tournament_size = 5
+            parent_indices = random.sample(range(elite_count), 2)
+            parent1 = population[parent_indices[0]]
+            parent2 = population[parent_indices[1]]
+
+            # Crossover to create a new child
+            if random.random() < crossover_rate:
+                crossover_point = random.randint(1, dim - 1)
+                child = parent1[:crossover_point] + parent2[crossover_point:]
+            else:
+                child = parent1[:]  # No crossover, just clone parent1
+
+            # Mutation to introduce variability
+            for j in range(dim):
+                if random.random() < mutation_rate:
+                    child[j] = random.uniform(bounds[j][0], bounds[j][1])
+
+            new_population.append(child)
+
+        # Evaluate the new population
+        fitness = evaluate_population(new_population)
+
+    # Return the fitness of the best-found solution
+    return best
+```";;;04bc872a-c253-44fb-949b-893cef2bdd05;{}

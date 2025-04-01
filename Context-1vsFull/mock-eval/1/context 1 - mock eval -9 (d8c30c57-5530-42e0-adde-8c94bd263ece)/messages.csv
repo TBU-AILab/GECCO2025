@@ -1,0 +1,1320 @@
+time;tokens;role;text;path_solution_file;path_solution_metadata;id;metadata
+2025-03-31 20:42:23.584643+00:00;0;system;You are an expert in designing effective metaheuristic optimizers for a constrained industrial optimization problem. You are also a master Python coder. You reply with python code only. Ensure all cost function evaluations (evals) are properly counted when func() is called. Return Python code that is complete and can be run without further modifications. Do not import any additional libraries or parts of them. Develop the code incrementally, ensuring each part is complete and functional before moving to the next step. Adhere to the latest Python practices and standards. Ensure the code is free from syntax and logical errors.;;;51002091-26fc-4dc1-a6f1-f93947c6d75a;{}
+2025-03-31 20:42:23.584793+00:00;0;user;"Your task as an advanced AI is to innovate in the design of a single-objective metaheuristic algorithm aimed at minimizing the objective function. You are encouraged to be inventive and experiment with various strategies, including adapting existing algorithms or combining them to form new methodologies. Do not include any testing functions or statistical tests, as these are conducted externally. Ensure that you adhere strictly to the provided structure: method name and attributes are given. Focus on developing the [Algorithm body] of the ""run"" method. Expand the search method with your novel approach, ensuring that every aspect of the algorithm's execution is geared towards effectively minimizing the objective function. Your innovative solution should be fully functional within this framework, without requiring external libraries. Here is the template you need to fill followed by an example.
+
+Template:
+```
+def run(func, dim, bounds, max_evals):
+
+[Algorithm body]
+
+# return fitness of the best found solution
+return best
+Example implementation of a random search algorithm in the given template:
+
+import numpy as np
+
+def run(func, dim, bounds, max_evals): best = float('inf')
+
+# Algorithm body
+for eval in range(max_evals):
+    params = np.array([np.random.uniform(low, high) for low, high in bounds])
+    fitness = func(params)
+    if best is None or fitness <= best:
+        best = fitness
+
+return best
+```";;;748e818e-d4de-4fc9-a49f-e4efe2a19497;{}
+2025-03-31 20:42:33.451752+00:00;420;assistant;"```python
+def run(func, dim, bounds, max_evals):
+    # Initialize the population
+    population_size = 20
+    perturbation_strength = 0.1
+    population = [([low + (high - low) * random() for low, high in bounds], None) for _ in range(population_size)]
+    for i in range(population_size):
+        population[i] = (population[i][0], func(population[i][0]))
+    
+    evals = population_size
+    best = min(population, key=lambda x: x[1])[1]  # Get the best individual's fitness
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for i, (individual, fitness) in enumerate(population):
+            # Generate a new solution by perturbing the current one
+            new_solution = [max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random() * 2 - 1))) for d in range(dim)]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Compare and select if the new solution is better
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Incorporate offspring into the next generation of population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best = min(population, key=lambda x: x[1])[1]
+    
+    return best
+
+from random import random
+
+# Example usage assuming an external func
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;37976ad0-4b55-4229-900b-ae29897188a5;{}
+2025-03-31 20:42:33.592639+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;c4b5166d-e9a7-46cf-96b3-744f49caa294;{}
+2025-03-31 20:42:37.895666+00:00;420;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the population
+    population_size = 20
+    perturbation_strength = 0.1
+    population = [([low + (high - low) * random.random() for low, high in bounds], None) for _ in range(population_size)]
+    for i in range(population_size):
+        population[i] = (population[i][0], func(population[i][0]))
+    
+    evals = population_size
+    best = min(population, key=lambda x: x[1])[1]  # Get the best individual's fitness
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for i, (individual, fitness) in enumerate(population):
+            # Generate a new solution by perturbing the current one
+            new_solution = [max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1))) for d in range(dim)]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Compare and select if the new solution is better
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Incorporate offspring into the next generation of population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best = min(population, key=lambda x: x[1])[1]
+    
+    return best
+
+# Example usage assuming an external func
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;9413e0d4-29bf-41c9-ba0e-e10877c8f05c;{}
+2025-03-31 20:42:38.034000+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;c0c16a38-44cb-43e4-8519-9ca11db6d940;{}
+2025-03-31 20:42:43.464134+00:00;420;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the population
+    population_size = 20
+    perturbation_strength = 0.1
+    population = [([low + (high - low) * random.random() for low, high in bounds], None) for _ in range(population_size)]
+    for i in range(population_size):
+        population[i] = (population[i][0], func(population[i][0]))
+    
+    evals = population_size
+    best = min(population, key=lambda x: x[1])[1]  # Get the best individual's fitness
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for i, (individual, fitness) in enumerate(population):
+            # Generate a new solution by perturbing the current one
+            new_solution = [max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1))) for d in range(dim)]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Compare and select if the new solution is better
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Incorporate offspring into the next generation of population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best = min(population, key=lambda x: x[1])[1]
+    
+    return best
+
+# Example usage assuming an external func
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;50944f95-7597-4d6c-9408-ae53b9537b14;{}
+2025-03-31 20:42:43.597681+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;42910f8b-1d7e-4631-a2fc-00773690c6e6;{}
+2025-03-31 20:42:46.643233+00:00;420;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    # Initialize the population
+    population_size = 20
+    perturbation_strength = 0.1
+    population = [([low + (high - low) * random.random() for low, high in bounds], None) for _ in range(population_size)]
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+    
+    evals = population_size
+    best = min(population, key=lambda x: x[1])[1]  # Get the best individual's fitness
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Generate a new solution by perturbing the current one
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Compare and select if the new solution is better
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Incorporate offspring into the next generation of population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best = min(population, key=lambda x: x[1])[1]
+    
+    return best
+
+# Example usage assuming an external func
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;9a9a30b5-c2ba-4a53-b083-495cb782f1cb;{}
+2025-03-31 20:42:46.786987+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;c8f72189-e70b-4960-9ab8-45582cae38c3;{}
+2025-03-31 20:42:52.108868+00:00;453;assistant;"```python
+import random
+
+# Ensure random is correctly defined to avoid NameError
+def run(func, dim, bounds, max_evals):
+    # Set up the basic parameters
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Create an initial population
+    population = [
+        ([low + (high - low) * random.random() for low, high in bounds], None) for _ in range(population_size)
+    ]
+    
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+    
+    evals = population_size
+    best_fitness = min(population, key=lambda x: x[1])[1]  # Get the best individual's fitness
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current one
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select the better solution
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Sort the offspring and select the top solutions to continue
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+# Example usage assuming an external func
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;d130e439-1ad1-4627-a6c0-f97a505de1b8;{}
+2025-03-31 20:42:52.245168+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;04b2e572-ed03-4b9c-a9fe-0d22eccc0742;{}
+2025-03-31 20:43:00.124002+00:00;453;assistant;"```python
+import random
+
+# Ensure random is correctly defined to avoid NameError
+def run(func, dim, bounds, max_evals):
+    # Set up the basic parameters
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Create an initial population
+    population = [
+        ([low + (high - low) * random.random() for low, high in bounds], None) for _ in range(population_size)
+    ]
+    
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+    
+    evals = population_size
+    best_fitness = min(population, key=lambda x: x[1])[1]  # Get the best individual's fitness
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current one
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select the better solution
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Sort the offspring and select the top solutions to continue
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+# Example usage assuming an external func
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;f14d0320-4ad1-4c55-8565-a9f8c65ae93b;{}
+2025-03-31 20:43:00.256966+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;3d481e11-4be8-4782-b759-7a69c22666b2;{}
+2025-03-31 20:43:05.531031+00:00;515;assistant;"```python
+import random
+
+# Function to encapsulate the full metaheuristic search
+def run(func, dim, bounds, max_evals):
+    # Initialization of variables for search process
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Create an initial population of solutions within provided bounds
+    population = [
+        ([low + (high - low) * random.random() for low, high in bounds], None) 
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1  # Count each function evaluation
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current one
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1  # Count each function evaluation
+            
+            # Select the better solution
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Sort the offspring and select the top solutions to continue
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+# Example usage assuming an external func
+def func_example(x):
+    """"""Example function to evaluate; just the sum of squares of the solution vector.""""""
+    return sum(x_i**2 for x_i in x)
+
+# Define the problem dimensionality and bounds of the search space
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+# Run the search and output the best fitness value found
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;c5cc77b1-35c8-472f-93e2-693ed5593938;{}
+2025-03-31 20:43:05.663274+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;12c7681c-d655-4990-9089-f747875c7ae4;{}
+2025-03-31 20:43:10.283507+00:00;379;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+
+    population = [
+        ([low + (high - low) * random.random() for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;c586c89f-5d98-4080-8c4e-94361d14aa67;{}
+2025-03-31 20:43:10.421984+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;577ea71c-a0f8-473f-ab63-c6a05835b696;{}
+2025-03-31 20:43:16.558056+00:00;465;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Initialize population with random solutions
+    population = [
+        ([random.uniform(low, high) for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    # Main loop of the optimizer
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current individual
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select the best solution between the current one and the perturbed one
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Select the best individuals to form the new population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+# Example quadratic function to minimize
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+# Define the problem dimensionality and bounds
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+# Run the optimizer and print the best fitness found
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;5c5eb763-ec0c-4a54-9b52-d4aa1c1ffe98;{}
+2025-03-31 20:43:16.693387+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;1ff8efad-1ee3-4016-bd5b-5de93f7e8493;{}
+2025-03-31 20:43:21.789694+00:00;465;assistant;"```python
+import random
+
+def run(func, dim, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Initialize population with random solutions
+    population = [
+        ([random.uniform(low, high) for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    # Main loop of the optimizer
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current individual
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select the best solution between the current one and the perturbed one
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Select the best individuals to form the new population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+# Example quadratic function to minimize
+def func_example(x):
+    return sum(x_i**2 for x_i in x)
+
+# Define the problem dimensionality and bounds
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+# Run the optimizer and print the best fitness found
+best_fitness = run(func_example, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;76b50b64-8081-4c1e-8370-c606ca7fb0f1;{}
+2025-03-31 20:43:21.935260+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+";;;9afac5c5-0cc4-4589-817f-14218a0016bf;{}
+2025-03-31 20:43:26.178528+00:00;470;assistant;"```python
+import random
+
+def run_optimizer(func, dim, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Initialize a population with random solutions
+    population = [
+        ([random.uniform(low, high) for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    # Main loop of the optimizer
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current individual
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select the best solution between the current one and the perturbed one
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Select the best individuals to form the new population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+# Example quadratic function to minimize
+def example_cost_function(x):
+    return sum(x_i**2 for x_i in x)
+
+# Define the problem dimensionality and bounds
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+# Run the optimizer and print the best fitness found
+best_fitness = run_optimizer(example_cost_function, dimensionality, bounds_example, maximum_evaluations)
+print(""Best Fitness Found:"", best_fitness)
+```";;;29455ba0-04ca-4f24-98c2-7901970993fb;{}
+2025-03-31 20:43:26.302560+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: NameError(""name 'random' is not defined"")
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;ebd277b8-90cd-413e-9fa9-d02e76344345;{}
+2025-03-31 20:43:30.754704+00:00;481;assistant;"```python
+import random
+
+def run_optimizer(func, dim, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Initialize a population with random solutions
+    population = [
+        ([random.uniform(low, high) for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    # Main loop of the optimizer
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current individual
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select the best solution between the current one and the perturbed one
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Select the best individuals to form the new population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+# Example quadratic function to minimize
+def example_cost_function(x):
+    return sum(x_i**2 for x_i in x)
+
+# Define the problem dimensionality and bounds
+dimensionality = 5
+bounds_example = [(-5, 5) for _ in range(dimensionality)]
+maximum_evaluations = 100
+
+if __name__ == ""__main__"":
+    # Run the optimizer and print the best fitness found
+    best_fitness = run_optimizer(example_cost_function, dimensionality, bounds_example, maximum_evaluations)
+    print(""Best Fitness Found:"", best_fitness)
+```";;;6e9a21c7-10bd-4712-9092-4d1863e1accd;{}
+2025-03-31 20:43:30.874071+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;c813c301-c05f-4c2c-95c8-a303107d8534;{}
+2025-03-31 20:43:34.664350+00:00;492;assistant;"```python
+import random
+
+def main():
+    # Example quadratic function to minimize
+    def example_cost_function(x):
+        return sum(x_i**2 for x_i in x)
+
+    # Define the problem dimensionality and bounds
+    dimensionality = 5
+    bounds_example = [(-5, 5) for _ in range(dimensionality)]
+    maximum_evaluations = 100
+    
+    # Run the optimizer and print the best fitness found
+    best_fitness = run_optimizer(example_cost_function, dimensionality, bounds_example, maximum_evaluations)
+    print(""Best Fitness Found:"", best_fitness)
+
+def run_optimizer(func, dim, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+
+    # Initialize a population with random solutions
+    population = [
+        ([random.uniform(low, high) for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate the initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    # Main loop of the optimizer
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Create a new solution by perturbing the current individual
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dim)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select the best solution between the current one and the perturbed one
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Select the best individuals to form the new population
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+if __name__ == ""__main__"":
+    main()
+```";;;98085f74-21b9-4350-9e41-0473cd3e6cb5;{}
+2025-03-31 20:43:34.783639+00:00;0;user;"Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+Test:Metaheuristic: Algorithm could not be checked due to the following error: KeyError('run')
+";;;0a9c6337-7198-4853-b6df-afac0ac4abfd;{}
+2025-03-31 20:43:41.366175+00:00;447;assistant;"```python
+import random
+
+def example_cost_function(x):
+    """"""Example objective function to be minimized.""""""
+    return sum(x_i**2 for x_i in x)
+
+def constrained_optimizer(func, dimensionality, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+    
+    # Initialize population with random solutions
+    population = [
+        ([random.uniform(low, high) for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Perturb current individual to generate new solution
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dimensionality)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select better solution
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Form new population with the best solutions
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+def run():
+    dimensionality = 5
+    bounds = [(-5, 5) for _ in range(dimensionality)]
+    max_evaluations = 100
+    
+    best_fitness = constrained_optimizer(example_cost_function, dimensionality, bounds, max_evaluations)
+    print(""Best Fitness Found:"", best_fitness)
+
+if __name__ == ""__main__"":
+    run()
+```";;;d9057c3d-29f9-46ad-a878-7ba85d60e32b;{}
+2025-03-31 20:43:41.490054+00:00;0;user;"Test:Metaheuristic: Algorithm None raised unexpected exception run() takes 0 positional arguments but 4 were given on function = InvertedSphere.
+Test:Metaheuristic: Algorithm None raised unexpected exception run() takes 0 positional arguments but 4 were given on function = InvertedSphere.
+";;;28aeb486-cc3f-4ace-9363-a3392598e6f0;{}
+2025-03-31 20:43:45.509263+00:00;469;assistant;"```python
+import random
+
+def example_cost_function(x):
+    """"""Example objective function to be minimized.""""""
+    return sum(x_i**2 for x_i in x)
+
+def constrained_optimizer(func, dimensionality, bounds, max_evals):
+    population_size = 20
+    perturbation_strength = 0.1
+    
+    # Initialize population with random solutions
+    population = [
+        ([random.uniform(low, high) for low, high in bounds], None)
+        for _ in range(population_size)
+    ]
+    
+    evals = 0
+
+    # Evaluate initial population
+    for i in range(population_size):
+        individual = population[i][0]
+        population[i] = (individual, func(individual))
+        evals += 1
+    
+    best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    while evals < max_evals:
+        offspring = []
+        
+        for individual, fitness in population:
+            # Perturb current individual to generate new solution
+            new_solution = [
+                max(bounds[d][0], min(bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                for d in range(dimensionality)
+            ]
+            new_fitness = func(new_solution)
+            evals += 1
+            
+            # Select better solution
+            if new_fitness < fitness:
+                offspring.append((new_solution, new_fitness))
+            else:
+                offspring.append((individual, fitness))
+        
+        # Form new population with the best solutions
+        population = sorted(offspring, key=lambda x: x[1])[:population_size]
+        best_fitness = min(population, key=lambda x: x[1])[1]
+    
+    return best_fitness
+
+def run(func, dimensionality, bounds, max_evaluations):
+    best_fitness = constrained_optimizer(func, dimensionality, bounds, max_evaluations)
+    print(""Best Fitness Found:"", best_fitness)
+
+if __name__ == ""__main__"":
+    dimensionality = 5
+    bounds = [(-5, 5) for _ in range(dimensionality)]
+    max_evaluations = 100
+    
+    run(example_cost_function, dimensionality, bounds, max_evaluations)
+```";;;161712bd-2255-4165-b2ca-db356f7478ab;{}
+2025-03-31 20:43:45.762784+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;f940d19c-e323-4d85-9935-34b57d7060dd;{}
+2025-03-31 20:43:50.673599+00:00;541;assistant;"```python
+import random
+
+class MetaheuristicOptimizer:
+    def __init__(self, func, dimensionality, bounds, max_evals):
+        self.func = func
+        self.dimensionality = dimensionality
+        self.bounds = bounds
+        self.max_evals = max_evals
+        self.evals = 0
+
+    def evaluate(self, solution):
+        self.evals += 1
+        return self.func(solution)
+
+    def optimize(self):
+        population_size = 20
+        perturbation_strength = 0.1
+        
+        # Initialize population with random solutions
+        population = [
+            ([random.uniform(low, high) for low, high in self.bounds], None)
+            for _ in range(population_size)
+        ]
+        
+        # Evaluate initial population
+        for i in range(population_size):
+            individual = population[i][0]
+            population[i] = (individual, self.evaluate(individual))
+        
+        best_fitness = min(population, key=lambda x: x[1])[1]
+        
+        while self.evals < self.max_evals:
+            offspring = []
+            
+            for individual, fitness in population:
+                # Perturb current individual to generate new solution
+                new_solution = [
+                    max(self.bounds[d][0], min(self.bounds[d][1], individual[d] + perturbation_strength * (random.random() * 2 - 1)))
+                    for d in range(self.dimensionality)
+                ]
+                new_fitness = self.evaluate(new_solution)
+                
+                # Select better solution
+                if new_fitness < fitness:
+                    offspring.append((new_solution, new_fitness))
+                else:
+                    offspring.append((individual, fitness))
+            
+            # Form new population with the best solutions
+            population = sorted(offspring, key=lambda x: x[1])[:population_size]
+            best_fitness = min(population, key=lambda x: x[1])[1]
+        
+        return best_fitness
+
+def example_cost_function(x):
+    """"""Example objective function to be minimized.""""""
+    return sum(x_i**2 for x_i in x)
+
+def run(func, dimensionality, bounds, max_evaluations):
+    optimizer = MetaheuristicOptimizer(func, dimensionality, bounds, max_evaluations)
+    best_fitness = optimizer.optimize()
+    print(""Best Fitness Found:"", best_fitness)
+
+if __name__ == ""__main__"":
+    dimensionality = 5
+    bounds = [(-5, 5) for _ in range(dimensionality)]
+    max_evaluations = 100
+    
+    run(example_cost_function, dimensionality, bounds, max_evaluations)
+```";;;89fd32f5-a9a9-44aa-a862-07e1aaf9575d;{}
+2025-03-31 20:43:50.933614+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;e7bf99ce-6a44-4508-ab82-6f839109170e;{}
+2025-03-31 20:43:57.078880+00:00;611;assistant;"```python
+import random
+
+class Evaluator:
+    def __init__(self, func):
+        self.func = func
+        self.evals = 0
+    
+    def evaluate(self, solution):
+        self.evals += 1
+        return self.func(solution)
+
+
+class MetaheuristicOptimizer:
+    def __init__(self, evaluator, dimensionality, bounds, max_evals):
+        self.evaluator = evaluator
+        self.dimensionality = dimensionality
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+    def random_solution(self):
+        return [random.uniform(low, high) for low, high in self.bounds]
+
+    def perturb_solution(self, solution, strength):
+        return [
+            max(self.bounds[d][0], min(self.bounds[d][1], solution[d] + strength * (random.random() * 2 - 1)))
+            for d in range(self.dimensionality)
+        ]
+
+    def optimize(self):
+        population_size = 20
+        perturbation_strength = 0.1
+        
+        # Initialize population with random solutions
+        population = [
+            (self.random_solution(), None) for _ in range(population_size)
+        ]
+        
+        # Evaluate initial population
+        for i in range(population_size):
+            individual = population[i][0]
+            population[i] = (individual, self.evaluator.evaluate(individual))
+        
+        best_fitness = min(population, key=lambda x: x[1])[1]
+        
+        while self.evaluator.evals < self.max_evals:
+            offspring = []
+            
+            for individual, fitness in population:
+                # Perturb current individual to generate a new solution
+                new_solution = self.perturb_solution(individual, perturbation_strength)
+                new_fitness = self.evaluator.evaluate(new_solution)
+                
+                # Select the better solution
+                if new_fitness < fitness:
+                    offspring.append((new_solution, new_fitness))
+                else:
+                    offspring.append((individual, fitness))
+            
+            # Form new population with the best solutions
+            population = sorted(offspring, key=lambda x: x[1])[:population_size]
+            best_fitness = min(population, key=lambda x: x[1])[1]
+        
+        return best_fitness
+
+
+def example_cost_function(x):
+    """"""Example objective function to be minimized.""""""
+    return sum(x_i**2 for x_i in x)
+
+
+def run(func, dimensionality, bounds, max_evaluations):
+    evaluator = Evaluator(func)
+    optimizer = MetaheuristicOptimizer(evaluator, dimensionality, bounds, max_evaluations)
+    best_fitness = optimizer.optimize()
+    print(""Best Fitness Found:"", best_fitness)
+
+
+if __name__ == ""__main__"":
+    dimensionality = 5
+    bounds = [(-5, 5) for _ in range(dimensionality)]
+    max_evaluations = 100
+    
+    run(example_cost_function, dimensionality, bounds, max_evaluations)
+```";;;e1242ba3-2a65-4427-b528-8928c19bcd6f;{}
+2025-03-31 20:43:57.333118+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;d530a294-5ee1-4f5d-ab8c-d4c00a55c93e;{}
+2025-03-31 20:44:02.952930+00:00;618;assistant;"```python
+import random
+
+class Evaluator:
+    def __init__(self, func):
+        self.func = func
+        self.evals = 0
+    
+    def evaluate(self, solution):
+        self.evals += 1
+        return self.func(solution)
+
+
+class MetaheuristicOptimizer:
+    def __init__(self, evaluator, dimensionality, bounds, max_evals):
+        self.evaluator = evaluator
+        self.dimensionality = dimensionality
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+    def random_solution(self):
+        return [random.uniform(low, high) for low, high in self.bounds]
+
+    def perturb_solution(self, solution, strength):
+        return [
+            max(self.bounds[d][0], min(self.bounds[d][1], solution[d] + strength * (random.random() * 2 - 1)))
+            for d in range(self.dimensionality)
+        ]
+
+    def optimize(self):
+        population_size = 20
+        perturbation_strength = 0.1
+        
+        # Initialize population with random solutions and evaluate them
+        population = []
+        for _ in range(population_size):
+            individual = self.random_solution()
+            fitness = self.evaluator.evaluate(individual)
+            population.append((individual, fitness))
+        
+        best_fitness = min(population, key=lambda x: x[1])[1]
+        
+        while self.evaluator.evals < self.max_evals:
+            offspring = []
+            
+            for individual, fitness in population:
+                # Perturb current individual to generate a new solution
+                new_solution = self.perturb_solution(individual, perturbation_strength)
+                new_fitness = self.evaluator.evaluate(new_solution)
+                
+                # Select the better solution
+                if new_fitness < fitness:
+                    offspring.append((new_solution, new_fitness))
+                else:
+                    offspring.append((individual, fitness))
+            
+            # Sort by fitness and retain the best individuals
+            population = sorted(offspring, key=lambda x: x[1])[:population_size]
+            current_best_fitness = population[0][1]
+            
+            if current_best_fitness < best_fitness:
+                best_fitness = current_best_fitness
+
+        return best_fitness
+
+
+def example_cost_function(x):
+    """"""Example objective function to be minimized.""""""
+    return sum(x_i**2 for x_i in x)
+
+
+def run(func, dimensionality, bounds, max_evaluations):
+    evaluator = Evaluator(func)
+    optimizer = MetaheuristicOptimizer(evaluator, dimensionality, bounds, max_evaluations)
+    best_fitness = optimizer.optimize()
+    print(""Best Fitness Found:"", best_fitness)
+    print(""Total Function Evaluations:"", evaluator.evals)
+
+
+if __name__ == ""__main__"":
+    dimensionality = 5
+    bounds = [(-5, 5) for _ in range(dimensionality)]
+    max_evaluations = 100
+    
+    run(example_cost_function, dimensionality, bounds, max_evaluations)
+```";;;32ed1524-78c5-42eb-b964-72d3603aa60b;{}
+2025-03-31 20:44:03.206226+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;28d56dad-0720-4ffa-bbb8-99091fb79b5e;{}
+2025-03-31 20:44:13.842124+00:00;673;assistant;"```python
+import random
+
+class Evaluator:
+    def __init__(self, func):
+        self.func = func
+        self.evals = 0
+    
+    def evaluate(self, solution):
+        self.evals += 1
+        return self.func(solution)
+
+
+class MetaheuristicOptimizer:
+    def __init__(self, evaluator, dimensionality, bounds, max_evals):
+        self.evaluator = evaluator
+        self.dimensionality = dimensionality
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+    def random_solution(self):
+        return [random.uniform(low, high) for low, high in self.bounds]
+
+    def perturb_solution(self, solution, strength):
+        return [
+            max(self.bounds[d][0], min(self.bounds[d][1], solution[d] + strength * (random.random() * 2 - 1)))
+            for d in range(self.dimensionality)
+        ]
+
+    def select_best(self, population):
+        sorted_population = sorted(population, key=lambda x: x[1])
+        return sorted_population[0]
+
+    def optimize(self):
+        population_size = 20
+        perturbation_strength = 0.1
+        
+        # Initialize population with random solutions and evaluate them
+        population = [(self.random_solution(), None) for _ in range(population_size)]
+        population = [(indv, self.evaluator.evaluate(indv)) for indv, _ in population]
+        
+        best_solution, best_fitness = self.select_best(population)
+        
+        while self.evaluator.evals < self.max_evals:
+            offspring = []
+            
+            for individual, fitness in population:
+                # Perturb current individual to generate a new solution
+                new_solution = self.perturb_solution(individual, perturbation_strength)
+                new_fitness = self.evaluator.evaluate(new_solution)
+                
+                # Select the better solution
+                if new_fitness < fitness:
+                    offspring.append((new_solution, new_fitness))
+                else:
+                    offspring.append((individual, fitness))
+            
+            # Sort by fitness and retain the best individuals
+            population = sorted(offspring, key=lambda x: x[1])[:population_size]
+            current_best_solution, current_best_fitness = self.select_best(population)
+            
+            if current_best_fitness < best_fitness:
+                best_solution, best_fitness = current_best_solution, current_best_fitness
+
+        return best_solution, best_fitness
+
+
+def example_cost_function(x):
+    """"""Example objective function to be minimized.""""""
+    return sum(x_i**2 for x_i in x)
+
+def run(func, dimensionality, bounds, max_evaluations):
+    evaluator = Evaluator(func)
+    optimizer = MetaheuristicOptimizer(evaluator, dimensionality, bounds, max_evaluations)
+    best_solution, best_fitness = optimizer.optimize()
+    print(""Best Solution Found:"", best_solution)
+    print(""Best Fitness Found:"", best_fitness)
+    print(""Total Function Evaluations:"", evaluator.evals)
+
+
+if __name__ == ""__main__"":
+    dimensionality = 5
+    bounds = [(-5, 5) for _ in range(dimensionality)]
+    max_evaluations = 100
+    
+    run(example_cost_function, dimensionality, bounds, max_evaluations)
+```";;;e9aff08d-5350-4f35-824f-a459e8bf723d;{}
+2025-03-31 20:44:14.100546+00:00;0;user;"Try to improve your current solution based on the provided feedback.
+
+";;;c7262e28-f453-4c98-8516-60792b6d61c5;{}
+2025-03-31 20:44:22.582933+00:00;486;assistant;"```python
+import random
+
+class Evaluator:
+    def __init__(self, func):
+        self.func = func
+        self.evals = 0
+    
+    def evaluate(self, solution):
+        self.evals += 1
+        return self.func(solution)
+
+
+class MetaheuristicOptimizer:
+    def __init__(self, evaluator, dimensionality, bounds, max_evals):
+        self.evaluator = evaluator
+        self.dimensionality = dimensionality
+        self.bounds = bounds
+        self.max_evals = max_evals
+
+    def random_solution(self):
+        return [random.uniform(low, high) for low, high in self.bounds]
+
+    def perturb_solution(self, solution, strength):
+        return [
+            max(self.bounds[d][0], min(self.bounds[d][1], solution[d] + strength * (random.random() * 2 - 1)))
+            for d in range(self.dimensionality)
+        ]
+
+    def select_best(self, population):
+        return min(population, key=lambda x: x[1])
+
+    def optimize(self):
+        best_solution = self.random_solution()
+        best_fitness = self.evaluator.evaluate(best_solution)
+
+        while self.evaluator.evals < self.max_evals:
+            new_solution = self.perturb_solution(best_solution, 0.1)
+            new_fitness = self.evaluator.evaluate(new_solution)
+
+            if new_fitness < best_fitness:
+                best_solution, best_fitness = new_solution, new_fitness
+
+        return best_solution, best_fitness
+
+
+def example_cost_function(x):
+    """"""Example objective function to be minimized.""""""
+    return sum(x_i**2 for x_i in x)
+
+def run(func, dimensionality, bounds, max_evaluations):
+    evaluator = Evaluator(func)
+    optimizer = MetaheuristicOptimizer(evaluator, dimensionality, bounds, max_evaluations)
+    best_solution, best_fitness = optimizer.optimize()
+    print(""Best Solution Found:"", best_solution)
+    print(""Best Fitness Found:"", best_fitness)
+    print(""Total Function Evaluations:"", evaluator.evals)
+
+
+if __name__ == ""__main__"":
+    dimensionality = 5
+    bounds = [(-5, 5) for _ in range(dimensionality)]
+    max_evaluations = 100
+    
+    run(example_cost_function, dimensionality, bounds, max_evaluations)
+```";;;33b75de7-c0d3-4298-86f9-00839188ff34;{}
